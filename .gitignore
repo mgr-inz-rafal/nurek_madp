@@ -1,0 +1,6 @@
+*.exe
+*.a65
+*.xex
+*.lab
+*.lst
+.vscode
