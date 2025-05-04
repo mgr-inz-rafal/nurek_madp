@@ -1,4 +1,4 @@
-uses crt, graph, math;
+uses crt, graph, math, joystick;
 
 const
   NurekData: array[0..607] of BYTE = (
@@ -35,38 +35,56 @@ const
     0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,
     0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,0,0
   );
+  AngleStep: SINGLE = 0.008726646;
 
 type
   ChujMoveOutcome = (Nothing);
 
 type
   Game = Object
-    chuj_x: BYTE;
-    chuj_y: BYTE;
+    chuj_x: SINGLE;
+    chuj_y: SINGLE;
     chuj_a: SINGLE;
+    chuj_c: SINGLE;
+    current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
     function MoveChuj: ChujMoveOutcome;
     procedure DrawChuj;
+    procedure ChujLeft;
+    procedure ChujRight;
   end;
 
 constructor Game.Build();
 begin
   chuj_x := 139;
   chuj_y := 62;
+  chuj_c := 0;
   chuj_a := DegToRad(single(270));
+  current_delay := 60;
   finish := FALSE;
 end;  
 
 procedure Game.DrawChuj;
 begin
-  PutPixel(chuj_x, chuj_y, 1);
+  PutPixel(Round(chuj_x), Round(chuj_y), 1);
+end;
+
+procedure Game.ChujLeft;
+begin
+  chuj_c := chuj_c + AngleStep;
+end;
+
+procedure Game.ChujRight;
+begin
+  chuj_c := chuj_c - AngleStep;
 end;
 
 function Game.MoveChuj: ChujMoveOutcome;
 begin
-  chuj_x := Byte(Round(single(chuj_x) + sin(chuj_a)));
-  chuj_y := Byte(Round(single(chuj_y) + cos(chuj_a)));
+  chuj_x := chuj_x + sin(chuj_a);
+  chuj_y := chuj_y + cos(chuj_a);
+  chuj_a := chuj_a + chuj_c;
 
   Result := ChujMoveOutcome(Nothing);
 end;
@@ -95,6 +113,13 @@ begin
   begin
     g.DrawChuj;
     g.MoveChuj;
+
+    case joy_1 of
+      joy_left: g.ChujLeft;
+      joy_right: g.ChujRight;
+    end;
+
+    Delay(g.current_delay);
   end;
 
 end.
