@@ -41,13 +41,10 @@ const
   ChujBlocked: BYTE = 2;
 
 type
-  ChujMoveOutcome = (Nothing, TooLong);
+  ChujMoveOutcome = (Nothing, TooLong, TooShort);
 
 type
   Game = Object
-    chuj_x: SINGLE;
-    chuj_y: SINGLE;
-    chuj_a: SINGLE;
     chuj_c: SINGLE;
     chuj_s: BYTE;
     chuj_p: WORD;
@@ -66,17 +63,19 @@ type
 
 constructor Game.Build();
 begin
-  chuj_x := 139;
-  chuj_y := 62;
   chuj_c := 0;
-  chuj_a := DegToRad(single(270));
   chuj_s := ChujExtraction;
   chuj_p := 0;
+  chuj_history_x[chuj_p] := 139;
+  chuj_history_y[chuj_p] := 62;
+  chuj_history_a[chuj_p] := DegToRad(single(270));
   current_delay := 60;
   finish := FALSE;
 end;  
 
 procedure Game.DrawChuj;
+var
+  chuj_x, chuj_y: BYTE;
 begin
   case chuj_s of
     ChujExtraction:
@@ -85,7 +84,10 @@ begin
       SetColor(0);
   end;
 
-  PutPixel(Round(chuj_x), Round(chuj_y));
+  chuj_x := Round(chuj_history_x[chuj_p]);
+  chuj_y := Round(chuj_history_y[chuj_p]);
+
+  PutPixel(chuj_x, chuj_y);
 end;
 
 procedure Game.ChujLeft;
@@ -117,26 +119,32 @@ begin
 end;
 
 function Game.MoveChuj: ChujMoveOutcome;
+var
+  chuj_x, chuj_y, chuj_a: SINGLE;
 begin
   case chuj_s of
     ChujExtraction:
       begin
-        chuj_x := chuj_x + sin(chuj_a);
-        chuj_y := chuj_y + cos(chuj_a);
-        chuj_a := chuj_a + chuj_c;
+        if chuj_p = 299 then 
+          Exit(ChujMoveOutcome(TooLong));
 
-        chuj_history_x[chuj_p] := chuj_x;
-        chuj_history_y[chuj_p] := chuj_y;
-        chuj_history_a[chuj_p] := chuj_a;
+        chuj_x := chuj_history_x[chuj_p];
+        chuj_y := chuj_history_y[chuj_p];
+        chuj_a := chuj_history_a[chuj_p];
 
         chuj_p := chuj_p + 1;
-        if chuj_p = 300 then
-          Exit(ChujMoveOutcome(TooLong))
-        else
-          Exit(ChujMoveOutcome(Nothing));
+
+        chuj_history_x[chuj_p] := chuj_x + sin(chuj_a);
+        chuj_history_y[chuj_p] := chuj_y + cos(chuj_a);
+        chuj_history_a[chuj_p] := chuj_a + chuj_c;
+   
+        Exit(ChujMoveOutcome(Nothing));
       end;
     ChujContraction:
       begin
+        if chuj_p = 0 then 
+          Exit(ChujMoveOutcome(TooShort));
+
         chuj_p := chuj_p - 1;
         chuj_x := chuj_history_x[chuj_p];
         chuj_y := chuj_history_y[chuj_p];
