@@ -61,6 +61,7 @@ type
     procedure DrawChuj;
     procedure ChujLeft;
     procedure ChujRight;
+    procedure ChujProstowac;
   end;
 
 constructor Game.Build();
@@ -95,6 +96,24 @@ end;
 procedure Game.ChujRight;
 begin
   chuj_c := chuj_c - AngleStep;
+end;
+
+procedure Game.ChujProstowac;
+begin
+  if chuj_c = 0 then
+    Exit;
+  if chuj_c > 0 then
+  begin
+    chuj_c := chuj_c - AngleStep;
+    if chuj_c < 0 then
+      chuj_c := 0;
+  end;
+  if chuj_c < 0 then
+  begin
+    chuj_c := chuj_c + AngleStep;
+    if chuj_c > 0 then
+      chuj_c := 0;
+  end;
 end;
 
 function Game.MoveChuj: ChujMoveOutcome;
@@ -157,6 +176,8 @@ begin
     case joy_1 of
       joy_left: g.ChujLeft;
       joy_right: g.ChujRight;
+    else
+      g.ChujProstowac
     end;
 
     case strig0 of
