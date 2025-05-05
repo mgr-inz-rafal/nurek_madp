@@ -51,6 +51,7 @@ type
     chuj_history_x: array[0..299] of SINGLE;
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
+  chuj_history_grid: array[0..159, 0..79] of BYTE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -66,9 +67,10 @@ begin
   chuj_c := 0;
   chuj_s := ChujExtraction;
   chuj_p := 0;
-  chuj_history_x[chuj_p] := 139;
+  chuj_history_x[chuj_p] := 140;
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
+  FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
   current_delay := 60;
   finish := FALSE;
 end;  
@@ -77,17 +79,32 @@ procedure Game.DrawChuj;
 var
   chuj_x, chuj_y: BYTE;
 begin
-  case chuj_s of
-    ChujExtraction:
-      SetColor(1);
-    ChujContraction:
-      SetColor(0);
-  end;
-
   chuj_x := Round(chuj_history_x[chuj_p]);
   chuj_y := Round(chuj_history_y[chuj_p]);
 
-  PutPixel(chuj_x, chuj_y);
+  case chuj_s of
+    ChujExtraction:
+      begin
+        SetColor(1);
+        PutPixel(chuj_x, chuj_y);
+
+        Inc(chuj_history_grid[chuj_x, chuj_y]);
+      end;
+    ChujContraction:
+      begin
+        Dec(chuj_history_grid[chuj_x, chuj_y]);
+
+        if chuj_history_grid[chuj_x, chuj_y] = 0 then
+          SetColor(0)
+        else
+          SetColor(1);
+      
+        PutPixel(chuj_x, chuj_y);
+        Dec(chuj_p);
+
+      end
+  end;
+
 end;
 
 procedure Game.ChujLeft;
@@ -145,10 +162,9 @@ begin
         if chuj_p = 0 then 
           Exit(ChujMoveOutcome(TooShort));
 
-        chuj_p := chuj_p - 1;
-        chuj_x := chuj_history_x[chuj_p];
-        chuj_y := chuj_history_y[chuj_p];
-        chuj_a := chuj_history_a[chuj_p];
+        chuj_x := chuj_history_x[chuj_p-1];
+        chuj_y := chuj_history_y[chuj_p-1];
+        chuj_a := chuj_history_a[chuj_p-1];
       end;
     ChujBlocked:
       begin
@@ -178,8 +194,8 @@ begin
 
   while not g.finish do
   begin
-    g.DrawChuj;
     g.MoveChuj;
+    g.DrawChuj;
 
     case joy_1 of
       joy_left: g.ChujLeft;
