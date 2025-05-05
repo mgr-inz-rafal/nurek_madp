@@ -36,9 +36,12 @@ const
     0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,0,0
   );
   AngleStep: SINGLE = 0.008726646;
+  ChujExtraction: BYTE = 0;
+  ChujContraction: BYTE = 1;
+  ChujBlocked: BYTE = 2;
 
 type
-  ChujMoveOutcome = (Nothing);
+  ChujMoveOutcome = (Nothing, TooLong);
 
 type
   Game = Object
@@ -46,6 +49,11 @@ type
     chuj_y: SINGLE;
     chuj_a: SINGLE;
     chuj_c: SINGLE;
+    chuj_s: BYTE;
+    chuj_p: WORD;
+    chuj_history_x: array[0..299] of SINGLE;
+    chuj_history_y: array[0..299] of SINGLE;
+    chuj_history_a: array[0..299] of SINGLE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -61,13 +69,22 @@ begin
   chuj_y := 62;
   chuj_c := 0;
   chuj_a := DegToRad(single(270));
+  chuj_s := ChujExtraction;
+  chuj_p := 0;
   current_delay := 60;
   finish := FALSE;
 end;  
 
 procedure Game.DrawChuj;
 begin
-  PutPixel(Round(chuj_x), Round(chuj_y), 1);
+  case chuj_s of
+    ChujExtraction:
+      SetColor(1);
+    ChujContraction:
+      SetColor(0);
+  end;
+
+  PutPixel(Round(chuj_x), Round(chuj_y));
 end;
 
 procedure Game.ChujLeft;
@@ -82,11 +99,34 @@ end;
 
 function Game.MoveChuj: ChujMoveOutcome;
 begin
-  chuj_x := chuj_x + sin(chuj_a);
-  chuj_y := chuj_y + cos(chuj_a);
-  chuj_a := chuj_a + chuj_c;
+  case chuj_s of
+    ChujExtraction:
+      begin
+        chuj_x := chuj_x + sin(chuj_a);
+        chuj_y := chuj_y + cos(chuj_a);
+        chuj_a := chuj_a + chuj_c;
 
-  Result := ChujMoveOutcome(Nothing);
+        chuj_history_x[chuj_p] := chuj_x;
+        chuj_history_y[chuj_p] := chuj_y;
+        chuj_history_a[chuj_p] := chuj_a;
+
+        chuj_p := chuj_p + 1;
+        if chuj_p = 300 then
+          Exit(ChujMoveOutcome(TooLong))
+        else
+          Exit(ChujMoveOutcome(Nothing));
+      end;
+    ChujContraction:
+      begin
+        chuj_p := chuj_p - 1;
+        chuj_x := chuj_history_x[chuj_p];
+        chuj_y := chuj_history_y[chuj_p];
+        chuj_a := chuj_history_a[chuj_p];
+      end;
+    ChujBlocked:
+      begin
+      end;
+  end;
 end;
 
 procedure DrawNurek;
@@ -117,6 +157,11 @@ begin
     case joy_1 of
       joy_left: g.ChujLeft;
       joy_right: g.ChujRight;
+    end;
+
+    case strig0 of
+      1: g.chuj_s := ChujExtraction;
+      0: g.chuj_s := ChujContraction;
     end;
 
     Delay(g.current_delay);
