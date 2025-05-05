@@ -105,11 +105,15 @@ end;
 procedure Game.ChujLeft;
 begin
   chuj_c := chuj_c + AngleStep;
+  if chuj_c > 0.38 then
+    chuj_c := chuj_c - AngleStep;
 end;
 
 procedure Game.ChujRight;
 begin
   chuj_c := chuj_c - AngleStep;
+  if chuj_c < -0.38 then
+    chuj_c := chuj_c + AngleStep;
 end;
 
 procedure Game.ChujProstowac;
