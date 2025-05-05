@@ -86,25 +86,20 @@ begin
     ChujExtraction:
       begin
         SetColor(1);
-        PutPixel(chuj_x, chuj_y);
-
         Inc(chuj_history_grid[chuj_x, chuj_y]);
       end;
     ChujContraction:
       begin
         Dec(chuj_history_grid[chuj_x, chuj_y]);
-
         if chuj_history_grid[chuj_x, chuj_y] = 0 then
           SetColor(0)
         else
           SetColor(1);
-      
-        PutPixel(chuj_x, chuj_y);
         Dec(chuj_p);
-
       end
   end;
 
+  PutPixel(chuj_x, chuj_y);
 end;
 
 procedure Game.ChujLeft;
