@@ -1,5 +1,5 @@
 del nurek.a65
 del nurek.exe
-mp.exe nurek.pas -ipath:d:\Sync\Atari\Narzedzia\madpascal\lib
+mp.exe nurek.pas -code:320D -ipath:d:\Sync\Atari\Narzedzia\madpascal\lib
 mads.exe nurek.a65 -x -i:d:\Sync\Atari\Narzedzia\madpascal\base -o:nurek.xex -l:nurek.lst -t:nurek.lab 
 nurek.xex

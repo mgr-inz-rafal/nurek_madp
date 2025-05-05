@@ -1,4 +1,4 @@
-uses crt, graph, math, joystick;
+uses crt, graph, math, joystick, cmc;
 
 const
   NurekData: array[0..607] of BYTE = (
@@ -39,6 +39,13 @@ const
   ChujExtraction: BYTE = 0;
   ChujContraction: BYTE = 1;
   ChujBlocked: BYTE = 2;
+	cmc_player = $2ab8;
+	cmc_modul = $2000;  
+
+var
+	msx: TCMC;  
+
+{$r 'cmc_play.rc'}  
 
 type
   ChujMoveOutcome = (Nothing, TooLong, TooShort);
@@ -51,7 +58,7 @@ type
     chuj_history_x: array[0..299] of SINGLE;
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
-  chuj_history_grid: array[0..159, 0..79] of BYTE;
+    chuj_history_grid: array[0..159, 0..79] of BYTE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -187,6 +194,16 @@ begin
 
   InitGraph(7);
 
+	msx.player:=pointer(cmc_player);
+	msx.modul:=pointer(cmc_modul);  
+
+	msx.init;
+
+	repeat
+		pause;
+		msx.play;
+	until keypressed;  
+
   g.Build;
 
   DrawNurek;
@@ -214,3 +231,5 @@ begin
 end.
 
 
+// MODUL = 2000-2ab7
+// PLAYER = 2ab8-3279
