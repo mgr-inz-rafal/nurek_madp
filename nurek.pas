@@ -100,45 +100,60 @@ type
     procedure ChujLeft;
     procedure ChujRight;
     procedure ChujProstowac;
-    function GetNibble(x, y: Integer): Byte;
-    procedure SetNibble(x, y: Integer; value: Byte);
-    procedure IncrementNibble(x, y: Integer);
-    function DecrementNibble(x, y: Integer): BYTE;
+    function GetNibble(x, y: Byte): Byte;
+    procedure SetNibble(x, y: Byte; value: Byte);
+    procedure IncrementNibble(x, y: Byte);
+    function DecrementNibble(x, y: Byte): BYTE;
   end;
 
-function Game.GetNibble(x, y: Integer): Byte;
+function Game.GetNibble(x, y: Byte): Byte;
 var
-  index, offset: Integer;
+  index, offset: Byte;
 begin
   index := x div 2;
   offset := x mod 2;
   
   if offset = 0 then
-    Result := chuj_history_grid[index, y] and $0F  // Get lower nibble
+    Result := chuj_history_grid[index, y] and $0F
   else
-    Result := (chuj_history_grid[index, y] shr 4) and $0F;  // Get upper nibble
+    Result := (chuj_history_grid[index, y] shr 4) and $0F;
 end;
 
-procedure Game.SetNibble(x, y: Integer; value: Byte);
+procedure Game.SetNibble(x, y: Byte; value: Byte);
 var
-  index, offset: Integer;
+  index, offset: Byte;
 begin
   index := x div 2;
   offset := x mod 2;
-  value := value and $0F;  // Ensure it's just 4 bits
+  value := value and $0F;
   
   if offset = 0 then
-    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $F0) or value  // Set lower nibble
+    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $F0) or value
   else
-    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $0F) or (value shl 4);  // Set upper nibble
+    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $0F) or (value shl 4);
 end;
 
-procedure Game.IncrementNibble(x, y: Integer);
+procedure Game.IncrementNibble(x, y: Byte);
 var
   currentValue: Byte;
 begin
   currentValue := Game.GetNibble(x, y);
   Game.SetNibble(x, y, currentValue + 1);
+end;
+
+function Game.DecrementNibble(x, y: Byte): BYTE;
+var
+  currentValue: Byte;
+begin
+  currentValue := Game.GetNibble(x, y);
+  
+  if currentValue > 0 then
+  begin
+    currentValue := currentValue - 1;
+    Game.SetNibble(x, y, currentValue);
+  end;
+  
+  Result := currentValue;
 end;
 
 constructor Game.Build();
@@ -153,21 +168,6 @@ begin
   current_delay := 30;
   finish := FALSE;
 end;  
-
-function Game.DecrementNibble(x, y: Integer): BYTE;
-var
-  currentValue: Byte;
-begin
-  currentValue := Game.GetNibble(x, y);
-  
-  if currentValue > 0 then
-  begin
-    currentValue := currentValue - 1;
-    Game.SetNibble(x, y, currentValue);
-  end;
-  
-  Result := currentValue;
-end;
 
 procedure Game.DrawChuj;
 var
