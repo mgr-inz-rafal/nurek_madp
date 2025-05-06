@@ -42,15 +42,25 @@ const
 	cmc_player = $3000;
 	cmc_modul = $2000;  
 
+  ST_EXPANSJA = 0;
+  ST_KONTRAKCJA = 1;
+  ST_DNO = 2;
+
 var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
+  statuses: array[0..2] of string = (
+      'Status proncia: ' + ' EXPANSJA '*,
+      'Status proncia: ' + ' KONTRAKCJA '*,
+      'Osiagnales dno, kontraktuj!'
+      );
+  last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Moved, TooLong, TooShort, HitBottom);
+  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted);
 
 type
   Game = Object
@@ -166,7 +176,7 @@ begin
         chuj_history_y[chuj_p] := chuj_y + cos(chuj_a);
         chuj_history_a[chuj_p] := chuj_a + chuj_c;
    
-        Exit(ChujMoveOutcome(Moved));
+        Exit(ChujMoveOutcome(Extracted));
       end;
     ChujContraction:
       begin
@@ -177,7 +187,7 @@ begin
         chuj_y := chuj_history_y[chuj_p-1];
         chuj_a := chuj_history_a[chuj_p-1];
 
-        Exit(ChujMoveOutcome(Moved));
+        Exit(ChujMoveOutcome(Contracted));
       end;
     ChujBlocked:
       begin
@@ -204,10 +214,18 @@ begin
   // This generates unnecessary RTI, there must be a better way to do it
 end;
 
-procedure ShowStatus(s: STRING);
+procedure ShowStatus(id: byte);
+var
+  s: string;
 begin
-  text_x := 20-Length(s) div 2;
+  if id = last_status then
+    Exit;
+  last_status := id;
+  text_x := 0;
   text_y := 2;
+  write('                                       ');
+  s := statuses[id];
+  text_x := 20-Length(s) div 2;
   write(s);
 end;
 
@@ -217,6 +235,7 @@ var
 begin
 
   InitGraph(7);
+  CursorOff;
 
 	msx.player:=pointer(cmc_player);
 	msx.modul:=pointer(cmc_modul);  
@@ -237,10 +256,19 @@ begin
   while not g.finish do
   begin
     case g.MoveChuj of
-      Moved: g.DrawChuj;
+      Extracted: 
+        begin
+          ShowStatus(ST_EXPANSJA);
+          g.DrawChuj;
+        end;
+      Contracted:
+        begin
+          ShowStatus(ST_KONTRAKCJA);
+          g.DrawChuj;
+        end;
       HitBottom:
         begin
-          ShowStatus('Osiagnales dno, kontraktuj!');
+          ShowStatus(ST_DNO);
         end;
     end;
 
