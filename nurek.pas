@@ -91,7 +91,7 @@ type
     chuj_history_x: array[0..299] of SINGLE;
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
-    chuj_history_grid: array[0..159, 0..79] of BYTE;
+    chuj_history_grid: array[0..79, 0..79] of BYTE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -100,7 +100,46 @@ type
     procedure ChujLeft;
     procedure ChujRight;
     procedure ChujProstowac;
+    function GetNibble(x, y: Integer): Byte;
+    procedure SetNibble(x, y: Integer; value: Byte);
+    procedure IncrementNibble(x, y: Integer);
+    procedure DecrementAndSetColor(x, y: Integer);
   end;
+
+function Game.GetNibble(x, y: Integer): Byte;
+var
+  index, offset: Integer;
+begin
+  index := x div 2;
+  offset := x mod 2;
+  
+  if offset = 0 then
+    Result := chuj_history_grid[index, y] and $0F  // Get lower nibble
+  else
+    Result := (chuj_history_grid[index, y] shr 4) and $0F;  // Get upper nibble
+end;
+
+procedure Game.SetNibble(x, y: Integer; value: Byte);
+var
+  index, offset: Integer;
+begin
+  index := x div 2;
+  offset := x mod 2;
+  value := value and $0F;  // Ensure it's just 4 bits
+  
+  if offset = 0 then
+    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $F0) or value  // Set lower nibble
+  else
+    chuj_history_grid[index, y] := (chuj_history_grid[index, y] and $0F) or (value shl 4);  // Set upper nibble
+end;
+
+procedure Game.IncrementNibble(x, y: Integer);
+var
+  currentValue: Byte;
+begin
+  currentValue := Game.GetNibble(x, y);
+  Game.SetNibble(x, y, currentValue + 1);
+end;
 
 constructor Game.Build();
 begin
@@ -115,6 +154,27 @@ begin
   finish := FALSE;
 end;  
 
+procedure Game.DecrementAndSetColor(x, y: Integer);
+var
+  currentValue: Byte;
+begin
+  // Get current 4-bit value
+  currentValue := Game.GetNibble(x, y);
+  
+  // Decrement if not zero
+  if currentValue > 0 then
+  begin
+    currentValue := currentValue - 1;
+    Game.SetNibble(x, y, currentValue);
+  end;
+  
+  // Set color based on value
+  if currentValue = 0 then
+    SetColor(0)
+  else
+    SetColor(1);
+end;
+
 procedure Game.DrawChuj;
 var
   chuj_x, chuj_y: BYTE;
@@ -126,15 +186,11 @@ begin
     ChujExtraction:
       begin
         SetColor(1);
-        Inc(chuj_history_grid[chuj_x, chuj_y]);
+        Game.IncrementNibble(chuj_x, chuj_y);
       end;
     ChujContraction:
       begin
-        Dec(chuj_history_grid[chuj_x, chuj_y]);
-        if chuj_history_grid[chuj_x, chuj_y] = 0 then
-          SetColor(0)
-        else
-          SetColor(1);
+        Game.DecrementAndSetColor(chuj_x, chuj_y);
         Dec(chuj_p);
       end
   end;
