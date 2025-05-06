@@ -44,7 +44,9 @@ const
   ChujBlocked: BYTE = 2;
 	cmc_player = $26A4;
 	cmc_modul = $2000;  
-  CHARSET_TILE_ADDRESS = $ac00;
+  
+  //CHARSET_TILE_ADDRESS = $ac00;
+  CHARSET_TILE_ADDRESS = $a800; // Higher mem is occupied (DL @ AFA2).
 
   ST_EXPANSJA = 0;
   ST_KONTRAKCJA = 1;
