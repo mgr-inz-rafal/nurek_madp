@@ -39,7 +39,7 @@ const
   ChujExtraction: BYTE = 0;
   ChujContraction: BYTE = 1;
   ChujBlocked: BYTE = 2;
-	cmc_player = $2ab8;
+	cmc_player = $3000;
 	cmc_modul = $2000;  
 
 var
@@ -187,6 +187,16 @@ begin
       PutPixel(i+140, j+40, NurekData[j * 19 + i]);
 end;
 
+procedure vbi_routine;interrupt;
+begin
+  msx.play;
+  asm {
+    jmp XITVBV
+    };
+
+  // This generates unnecessary RTI, there must be a better way to do it
+end;
+
 var
   g: Game;
 
@@ -199,10 +209,12 @@ begin
 
 	msx.init;
 
-	repeat
-		pause;
-		msx.play;
-	until keypressed;  
+  asm {
+    ldy <vbi_routine
+    ldx >vbi_routine
+    lda #7
+    jsr SETVBV
+  };
 
   g.Build;
 
