@@ -103,7 +103,7 @@ type
     function GetNibble(x, y: Integer): Byte;
     procedure SetNibble(x, y: Integer; value: Byte);
     procedure IncrementNibble(x, y: Integer);
-    procedure DecrementAndSetColor(x, y: Integer);
+    function DecrementAndSetColor(x, y: Integer): BYTE;
   end;
 
 function Game.GetNibble(x, y: Integer): Byte;
@@ -150,29 +150,23 @@ begin
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
-  current_delay := 60;
+  current_delay := 30;
   finish := FALSE;
 end;  
 
-procedure Game.DecrementAndSetColor(x, y: Integer);
+function Game.DecrementAndSetColor(x, y: Integer): BYTE;
 var
   currentValue: Byte;
 begin
-  // Get current 4-bit value
   currentValue := Game.GetNibble(x, y);
   
-  // Decrement if not zero
   if currentValue > 0 then
   begin
     currentValue := currentValue - 1;
     Game.SetNibble(x, y, currentValue);
   end;
   
-  // Set color based on value
-  if currentValue = 0 then
-    SetColor(0)
-  else
-    SetColor(1);
+  Result := currentValue;
 end;
 
 procedure Game.DrawChuj;
@@ -190,7 +184,7 @@ begin
       end;
     ChujContraction:
       begin
-        Game.DecrementAndSetColor(chuj_x, chuj_y);
+        SetColor(Byte(Game.DecrementAndSetColor(chuj_x, chuj_y) > 0));
         Dec(chuj_p);
       end
   end;
