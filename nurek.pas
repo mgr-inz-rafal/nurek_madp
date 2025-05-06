@@ -1,4 +1,7 @@
-uses crt, graph, math, joystick, cmc;
+//{$define romoff}
+{$define basicoff}
+
+uses crt, graph, math, joystick, cmc, atari;
 
 const
   NurekData: array[0..607] of BYTE = (
@@ -41,6 +44,7 @@ const
   ChujBlocked: BYTE = 2;
 	cmc_player = $26A4;
 	cmc_modul = $2000;  
+  CHARSET_TILE_ADDRESS = $ac00;
 
   ST_EXPANSJA = 0;
   ST_KONTRAKCJA = 1;
@@ -72,6 +76,7 @@ var
   last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
+{$r 'charset.rc'}  
 
 type
   ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow, HitKamien, HitJajco);
@@ -260,7 +265,7 @@ begin
   end;
 end;
 
-procedure vbi_routine;interrupt;
+procedure vbi_routine_os;interrupt;
 begin
   msx.play;
   asm {
@@ -268,6 +273,11 @@ begin
     };
 
   // This generates unnecessary RTI, there must be a better way to do it
+end;
+
+procedure vbi_routine_noos;interrupt;
+begin
+  // empty
 end;
 
 procedure ShowStatus(id: byte);
@@ -287,23 +297,48 @@ end;
 
 var
   g: Game;
+  old_vbl: pointer;  
 
 begin
-
   InitGraph(7);
   CursorOff;
+  CHBAS := Hi(CHARSET_TILE_ADDRESS);
 
 	msx.player:=pointer(cmc_player);
 	msx.modul:=pointer(cmc_modul);  
 
 	msx.init;
 
+  // With OS
   asm {
-    ldy <vbi_routine
-    ldx >vbi_routine
+    ldy <vbi_routine_os
+    ldx >vbi_routine_os
     lda #7
     jsr SETVBV
   };
+
+
+  // Without OS, but failed
+  // GetIntVec(iVBLD, old_vbl);
+  // SetIntVec(iVBLD, @vbi_routine_empty);
+
+  // asm {
+  //   SEI
+  //   LDA #<vbi_routine
+  //   STA $0222
+  //   LDA #>vbi_routine
+  //   STA $0223
+  //   CLI
+  // };
+
+//  repeat until keypressed;
+
+    // ldy <vbi_routine
+    // ldx >vbi_routine
+    // lda #7
+    // jsr SETVBV
+
+
 
   g.Build;
 
