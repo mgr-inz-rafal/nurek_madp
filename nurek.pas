@@ -44,11 +44,13 @@ const
 
 var
 	msx: TCMC;  
+  text_y: byte absolute 656;
+  text_x: byte absolute 657;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Nothing, TooLong, TooShort);
+  ChujMoveOutcome = (Moved, TooLong, TooShort, HitBottom);
 
 type
   Game = Object
@@ -155,13 +157,16 @@ begin
         chuj_y := chuj_history_y[chuj_p];
         chuj_a := chuj_history_a[chuj_p];
 
+        if chuj_y >= 79then
+          Exit(ChujMoveOutcome(HitBottom));
+
         chuj_p := chuj_p + 1;
 
         chuj_history_x[chuj_p] := chuj_x + sin(chuj_a);
         chuj_history_y[chuj_p] := chuj_y + cos(chuj_a);
         chuj_history_a[chuj_p] := chuj_a + chuj_c;
    
-        Exit(ChujMoveOutcome(Nothing));
+        Exit(ChujMoveOutcome(Moved));
       end;
     ChujContraction:
       begin
@@ -171,6 +176,8 @@ begin
         chuj_x := chuj_history_x[chuj_p-1];
         chuj_y := chuj_history_y[chuj_p-1];
         chuj_a := chuj_history_a[chuj_p-1];
+
+        Exit(ChujMoveOutcome(Moved));
       end;
     ChujBlocked:
       begin
@@ -195,6 +202,13 @@ begin
     };
 
   // This generates unnecessary RTI, there must be a better way to do it
+end;
+
+procedure ShowStatus(s: STRING);
+begin
+  text_x := 20-Length(s) div 2;
+  text_y := 2;
+  write(s);
 end;
 
 var
@@ -222,8 +236,13 @@ begin
 
   while not g.finish do
   begin
-    g.MoveChuj;
-    g.DrawChuj;
+    case g.MoveChuj of
+      Moved: g.DrawChuj;
+      HitBottom:
+        begin
+          ShowStatus('Osiagnales dno, kontraktuj!');
+        end;
+    end;
 
     case joy_1 of
       joy_left: g.ChujLeft;
