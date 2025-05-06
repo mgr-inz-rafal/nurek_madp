@@ -51,12 +51,13 @@ const
   ST_PLANSZA = 6;
   ST_LODZIK = 7;
   ST_KAMIEN = 8;
+  ST_JAJCO = 9;
 
 var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
-  statuses: array[0..8] of ShortString = (
+  statuses: array[0..9] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osiagnales dno, kontraktuj!',
@@ -65,14 +66,15 @@ var
       'Za dugi huj, kurcz sie',
       'Nie wolno wyjezdzac z planszy!',
       'Wykryto zagrozenie autolodem',
-      'Smyrnieto kamien, to blad'
+      'Smyrnieto kamien, to blad',
+      'Dinojajco zaplodnione, amen!'
       );
   last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow, HitKamien);
+  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow, HitKamien, HitJajco);
 
 type
   Game = Object
@@ -184,7 +186,7 @@ begin
         chuj_y := chuj_y + cos(chuj_a);
         chuj_a := chuj_a + chuj_c;
 
-        if chuj_y >= 79 then
+        if chuj_y > 79 then
           Exit(ChujMoveOutcome(HitBottom));
 
         if chuj_y < 0 then
@@ -199,12 +201,14 @@ begin
           if chuj_y > 38 then
              Exit(ChujMoveOutcome(AutoBlow))
           else 
-             if chuj_x >= 159 then
+             if chuj_x > 159 then
               Exit(ChujMoveOutcome(OutOfAkwen));
 
         pix := GetPixel(Round(chuj_x), Round(chuj_y));
         if pix = 3 then 
           Exit(ChujMoveOutcome(HitKamien));
+        if pix = 2 then 
+          Exit(ChujMoveOutcome(HitJajco));
 
         chuj_p := chuj_p + 1;
 
@@ -251,7 +255,7 @@ begin
     JY := Random(70) + 15;
     JSX := Random(5) + 5;
     JSY := Random(10) + 5;
-    SetColor(3);
+    SetColor(5-(i div 6 + 2));
     FillEllipse(JX, JY, JSX, JSY);
   end;
 end;
@@ -346,6 +350,10 @@ begin
       HitKamien:
         begin
           ShowStatus(ST_KAMIEN);
+        end;
+      HitJajco:
+        begin
+          ShowStatus(ST_JAJCO);
         end;
     end;
 
