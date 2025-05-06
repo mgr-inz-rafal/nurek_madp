@@ -42,7 +42,7 @@ const
   ChujExtraction: BYTE = 0;
   ChujContraction: BYTE = 1;
   ChujBlocked: BYTE = 2;
-	cmc_player = $26A4;
+	cmc_player = $2ab8;
 	cmc_modul = $2000;  
   
   //CHARSET_TILE_ADDRESS = $ac00;
