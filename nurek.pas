@@ -50,12 +50,13 @@ const
   ST_DUGI = 5;
   ST_PLANSZA = 6;
   ST_LODZIK = 7;
+  ST_KAMIEN = 8;
 
 var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
-  statuses: array[0..7] of ShortString = (
+  statuses: array[0..8] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osiagnales dno, kontraktuj!',
@@ -63,14 +64,15 @@ var
       'Osiagnieto limit krotkosci penisa',
       'Za dugi huj, kurcz sie',
       'Nie wolno wyjezdzac z planszy!',
-      'Wykryto zagrozenie autolodem'      
+      'Wykryto zagrozenie autolodem',
+      'Smyrnieto kamien, to blad'
       );
   last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow);
+  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow, HitKamien);
 
 type
   Game = Object
@@ -166,6 +168,7 @@ end;
 function Game.MoveChuj: ChujMoveOutcome;
 var
   chuj_x, chuj_y, chuj_a: SINGLE;
+  pix: BYTE;
 begin
   case chuj_s of
     ChujExtraction:
@@ -176,6 +179,10 @@ begin
         chuj_x := chuj_history_x[chuj_p];
         chuj_y := chuj_history_y[chuj_p];
         chuj_a := chuj_history_a[chuj_p];
+
+        chuj_x := chuj_x + sin(chuj_a);
+        chuj_y := chuj_y + cos(chuj_a);
+        chuj_a := chuj_a + chuj_c;
 
         if chuj_y >= 79 then
           Exit(ChujMoveOutcome(HitBottom));
@@ -195,11 +202,15 @@ begin
              if chuj_x >= 159 then
               Exit(ChujMoveOutcome(OutOfAkwen));
 
+        pix := GetPixel(Round(chuj_x), Round(chuj_y));
+        if pix = 3 then 
+          Exit(ChujMoveOutcome(HitKamien));
+
         chuj_p := chuj_p + 1;
 
-        chuj_history_x[chuj_p] := chuj_x + sin(chuj_a);
-        chuj_history_y[chuj_p] := chuj_y + cos(chuj_a);
-        chuj_history_a[chuj_p] := chuj_a + chuj_c;
+        chuj_history_x[chuj_p] := chuj_x;
+        chuj_history_y[chuj_p] := chuj_y;
+        chuj_history_a[chuj_p] := chuj_a;
    
         Exit(ChujMoveOutcome(Extracted));
       end;
@@ -331,6 +342,10 @@ begin
       AutoBlow:
         begin
           ShowStatus(ST_LODZIK);
+        end;
+      HitKamien:
+        begin
+          ShowStatus(ST_KAMIEN);
         end;
     end;
 
