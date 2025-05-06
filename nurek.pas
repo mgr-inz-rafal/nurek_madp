@@ -165,7 +165,7 @@ begin
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
-  current_delay := 30;
+  current_delay := 0;
   finish := FALSE;
 end;  
 
@@ -462,7 +462,8 @@ begin
       0: g.chuj_s := ChujContraction;
     end;
 
-    Delay(g.current_delay);
+    if g.current_delay > 0 then
+      Delay(g.current_delay);
   end;
 
 end.
