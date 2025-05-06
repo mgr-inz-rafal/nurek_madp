@@ -48,25 +48,29 @@ const
   ST_CIERPIENIE = 3;
   ST_KRUTKI = 4;
   ST_DUGI = 5;
+  ST_PLANSZA = 6;
+  ST_LODZIK = 7;
 
 var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
-  statuses: array[0..5] of string = (
+  statuses: array[0..7] of string = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osiagnales dno, kontraktuj!',
       'Na powierzchni tylko cierpienie...',
       'Osiagnieto limit krotkosci penisa',
-      'Za dugi huj, kurcz sie'
+      'Za dugi huj, kurcz sie',
+      'Nie wolno wyjezdzac z planszy!',
+      'Wykryto zagrozenie autolodem'      
       );
   last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced);
+  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced, OutOfAkwen, AutoBlow);
 
 type
   Game = Object
@@ -179,6 +183,18 @@ begin
         if chuj_y < 0 then
           Exit(ChujMoveOutcome(Surfaced));
 
+        if chuj_x < 0 then
+        begin
+          Exit(ChujMoveOutcome(OutOfAkwen));
+        end;
+
+        if chuj_x > 140 then
+          if chuj_y > 38 then
+             Exit(ChujMoveOutcome(AutoBlow))
+          else 
+             if chuj_x >= 159 then
+              Exit(ChujMoveOutcome(OutOfAkwen));
+
         chuj_p := chuj_p + 1;
 
         chuj_history_x[chuj_p] := chuj_x + sin(chuj_a);
@@ -290,6 +306,14 @@ begin
       TooLong:
         begin
           ShowStatus(ST_DUGI);
+        end;
+      OutOfAkwen:
+        begin
+          ShowStatus(ST_PLANSZA);
+        end;
+      AutoBlow:
+        begin
+          ShowStatus(ST_LODZIK);
         end;
     end;
 
