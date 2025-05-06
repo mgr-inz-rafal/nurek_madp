@@ -55,7 +55,7 @@ var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
-  statuses: array[0..7] of string = (
+  statuses: array[0..7] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osiagnales dno, kontraktuj!',
