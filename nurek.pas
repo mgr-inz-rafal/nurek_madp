@@ -45,22 +45,28 @@ const
   ST_EXPANSJA = 0;
   ST_KONTRAKCJA = 1;
   ST_DNO = 2;
+  ST_CIERPIENIE = 3;
+  ST_KRUTKI = 4;
+  ST_DUGI = 5;
 
 var
 	msx: TCMC;  
   text_y: byte absolute 656;
   text_x: byte absolute 657;
-  statuses: array[0..2] of string = (
+  statuses: array[0..5] of string = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
-      'Osiagnales dno, kontraktuj!'
+      'Osiagnales dno, kontraktuj!',
+      'Na powierzchni tylko cierpienie...',
+      'Osiagnieto limit krotkosci penisa',
+      'Za dugi huj, kurcz sie'
       );
   last_status: byte = -1;
 
 {$r 'cmc_play.rc'}  
 
 type
-  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted);
+  ChujMoveOutcome = (Extracted, TooLong, TooShort, HitBottom, Contracted, Surfaced);
 
 type
   Game = Object
@@ -167,8 +173,11 @@ begin
         chuj_y := chuj_history_y[chuj_p];
         chuj_a := chuj_history_a[chuj_p];
 
-        if chuj_y >= 79then
+        if chuj_y >= 79 then
           Exit(ChujMoveOutcome(HitBottom));
+
+        if chuj_y < 0 then
+          Exit(ChujMoveOutcome(Surfaced));
 
         chuj_p := chuj_p + 1;
 
@@ -269,6 +278,18 @@ begin
       HitBottom:
         begin
           ShowStatus(ST_DNO);
+        end;
+      Surfaced:
+        begin
+          ShowStatus(ST_CIERPIENIE);
+        end;
+      TooShort:
+        begin
+          ShowStatus(ST_KRUTKI);
+        end;
+      TooLong:
+        begin
+          ShowStatus(ST_DUGI);
         end;
     end;
 
