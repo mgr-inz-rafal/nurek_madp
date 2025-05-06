@@ -103,7 +103,7 @@ type
     function GetNibble(x, y: Integer): Byte;
     procedure SetNibble(x, y: Integer; value: Byte);
     procedure IncrementNibble(x, y: Integer);
-    function DecrementAndSetColor(x, y: Integer): BYTE;
+    function DecrementNibble(x, y: Integer): BYTE;
   end;
 
 function Game.GetNibble(x, y: Integer): Byte;
@@ -154,7 +154,7 @@ begin
   finish := FALSE;
 end;  
 
-function Game.DecrementAndSetColor(x, y: Integer): BYTE;
+function Game.DecrementNibble(x, y: Integer): BYTE;
 var
   currentValue: Byte;
 begin
@@ -184,7 +184,7 @@ begin
       end;
     ChujContraction:
       begin
-        SetColor(Byte(Game.DecrementAndSetColor(chuj_x, chuj_y) > 0));
+        SetColor(Byte(Game.DecrementNibble(chuj_x, chuj_y) > 0));
         Dec(chuj_p);
       end
   end;
@@ -194,16 +194,22 @@ end;
 
 procedure Game.ChujLeft;
 begin
-  chuj_c := chuj_c + AngleStep;
-  if chuj_c > 0.38 then
-    chuj_c := chuj_c - AngleStep;
+  if chuj_s = ChujExtraction then
+  begin
+    chuj_c := chuj_c + AngleStep;
+    if chuj_c > 0.38 then
+      chuj_c := chuj_c - AngleStep;
+  end;
 end;
 
 procedure Game.ChujRight;
 begin
-  chuj_c := chuj_c - AngleStep;
-  if chuj_c < -0.38 then
-    chuj_c := chuj_c + AngleStep;
+   if chuj_s = ChujExtraction then
+   begin
+    chuj_c := chuj_c - AngleStep;
+    if chuj_c < -0.38 then
+      chuj_c := chuj_c + AngleStep;
+  end;
 end;
 
 procedure Game.ChujProstowac;
