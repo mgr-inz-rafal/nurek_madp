@@ -39,7 +39,7 @@ const
   ChujExtraction: BYTE = 0;
   ChujContraction: BYTE = 1;
   ChujBlocked: BYTE = 2;
-	cmc_player = $3000;
+	cmc_player = $26A4;
 	cmc_modul = $2000;  
 
   ST_EXPANSJA = 0;
@@ -229,6 +229,22 @@ begin
       PutPixel(i+140, j+40, NurekData[j * 19 + i]);
 end;
 
+procedure DrawJajca;
+var
+  i: BYTE;
+  JX, JY, JSX, JSY: BYTE;
+begin
+  for i := 0 to 6 do
+  begin
+    JX := Random(100);
+    JY := Random(70) + 15;
+    JSX := Random(5) + 5;
+    JSY := Random(10) + 5;
+    SetColor(3);
+    FillEllipse(JX, JY, JSX, JSY);
+  end;
+end;
+
 procedure vbi_routine;interrupt;
 begin
   msx.play;
@@ -277,6 +293,7 @@ begin
   g.Build;
 
   DrawNurek;
+  DrawJajca;
 
   while not g.finish do
   begin
