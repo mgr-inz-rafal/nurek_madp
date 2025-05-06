@@ -91,7 +91,7 @@ type
     chuj_history_x: array[0..299] of SINGLE;
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
-    chuj_history_grid: array[0..79, 0..79] of BYTE;
+    chuj_history_grid: array[0..80, 0..80] of BYTE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -165,7 +165,7 @@ begin
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
-  current_delay := 0;
+  current_delay := 20;
   finish := FALSE;
 end;  
 
