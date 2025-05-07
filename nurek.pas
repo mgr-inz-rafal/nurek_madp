@@ -554,13 +554,8 @@ begin
 
 	msx.player:=pointer(cmc_player);
 	msx.modul:=pointer(cmc_modul);  
-	msx.init;
-
-  punkty := 0;
-  rzydz := 9;
-  plansza := 1;
-
-  InitGameLevel;
+	msx.initnosong;
+  msx.song(0);
 
   // With OS
   asm {
@@ -569,6 +564,13 @@ begin
     lda #7
     jsr SETVBV
   };
+
+
+  punkty := 0;
+  rzydz := 9;
+  plansza := 15;
+
+  InitGameLevel;
 
 
   // Without OS, but failed
@@ -605,7 +607,7 @@ begin
           if just_hit_kamien then
           begin
             just_hit_kamien := false;
-            msx.init;
+            msx.song(1);
           end;
         end;
       Contracted:
@@ -658,7 +660,7 @@ begin
           Inc(plansza);
           InitGameLevel;
           g.Build;
-          msx.init;
+          msx.song(1);
         end;
     end;
 
@@ -677,11 +679,6 @@ begin
     if plansza <= 21 then
     begin
       speed := 100 - (plansza-1)*5;
-      text_x := 0;
-      text_y := 0;
-      write(speed);
-      if speed < 0 then
-        speed := 0;
       Delay(speed);
     end;
   end;
