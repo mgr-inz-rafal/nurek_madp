@@ -433,7 +433,7 @@ procedure DrawSummaryHeaders;
 begin
   text_x := 2;
   text_y := 1;
-  write('Plansza: 00  Rzydx: @  Punkty: (    ');
+  write('Plansza:'*, ' 00  ', 'Rzydx:'*, ' @  ', 'Punkty:'*, ' (    ');
 end;
 
 procedure DrawSummaryRzydz;
