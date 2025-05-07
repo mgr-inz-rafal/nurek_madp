@@ -47,33 +47,27 @@ const
   ChujStartPos: BYTE = 140;
 	dl_game: array [0..94] of byte =
 	(
-     %10000000,                                         // DLI ($04)
-     $60, $70,                                          
-     %11110000,                                         // DLI ($0f)
+     $70, $70, $70,                                          
+     %11110000,                                         
 
      $4d, $60, $b0,
 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
      $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($1A)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($24)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($2E)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($38)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($42)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($4c)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($56)
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
-     %10001101,                                         // DLI ($5f)
+     %10001101,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     %10001101,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     %10001101,
 
      $42, $60, $bf,
      $02, $02, $02,
 
-     %01000001,                                         // DLI ($70)
+     %01000001,                                         
      lo(word(@dl_game)), hi(word(@dl_game))
 	);  
   
@@ -390,10 +384,43 @@ begin
 end;
 
 
-procedure dli_game; interrupt;
-begin
- asm { phr };
- asm { plr };
+procedure dli_game;assembler;interrupt;
+asm {
+  pha
+
+  lda vcount
+  cmp #$63
+  bne @+
+  lda #$ed
+  sta wsync
+  sta COLBAK
+  sta COLPF2
+@
+
+  cmp #$50
+  bne @+
+  lda #$96
+  sta wsync
+  sta COLBAK
+@
+
+  cmp #$32
+  bne @+
+  lda #$98
+  sta wsync
+  sta COLBAK
+@
+
+  cmp #$13
+  bne @+
+  lda #$9a
+  sta wsync
+  sta COLBAK
+@
+
+  pla
+};
+
 end;		
 
 var
