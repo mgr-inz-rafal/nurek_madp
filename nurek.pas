@@ -45,24 +45,36 @@ const
 	cmc_player = $2ab8;
 	cmc_modul = $2000;  
   ChujStartPos: BYTE = 140;
-	dl_game: array [0..93] of byte =
+	dl_game: array [0..94] of byte =
 	(
-     $70, $70, $70,
+     %10000000,                                         // DLI ($04)
+     $60, $70,                                          
+     %11110000,                                         // DLI ($0f)
+
      $4d, $60, $b0,
 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
-     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
      $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($1A)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($24)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($2E)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($38)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($42)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($4c)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($56)
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+     %10001101,                                         // DLI ($5f)
 
      $42, $60, $bf,
      $02, $02, $02,
 
-     $41, lo(word(@dl_game)), hi(word(@dl_game))
+     %01000001,                                         // DLI ($70)
+     lo(word(@dl_game)), hi(word(@dl_game))
 	);  
   
   //CHARSET_TILE_ADDRESS = $ac00;
@@ -374,13 +386,23 @@ begin
   write(s);
 end;
 
+
+procedure dli_game; interrupt;
+begin
+ asm { phr };
+ asm { plr };
+end;		
+
 var
   g: Game;
-  old_vbl: pointer;  
 
 begin
   InitGraph(7);
+
   dlist:=word(@dl_game);
+  SetIntVec(iDLI, @dli_game);
+  nmien:=%11000000;
+
   CursorOff;
   CHBAS := Hi(CHARSET_TILE_ADDRESS);
 
