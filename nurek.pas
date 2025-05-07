@@ -376,7 +376,7 @@ begin
     Exit;
   last_status := id;
   text_x := 0;
-  text_y := 2;
+  text_y := 3;
   write('                                       ');
   s := statuses[id];
   text_x := 20-Length(s) div 2;
@@ -395,6 +395,8 @@ asm {
   sta wsync
   sta COLBAK
   sta COLPF2
+  lda #$00
+  sta COLPF1
 @
 
   cmp #$50
