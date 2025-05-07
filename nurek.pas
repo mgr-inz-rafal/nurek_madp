@@ -431,6 +431,15 @@ var
 begin
   InitGraph(7);
 
+  asm {
+    ldx #$BA
+    ldy #$05
+    lda #$1a
+    sta $2C4
+    stx $2C5
+    sty $2C6
+  };
+
   dlist:=word(@dl_game);
   SetIntVec(iDLI, @dli_game);
   nmien:=%11000000;
