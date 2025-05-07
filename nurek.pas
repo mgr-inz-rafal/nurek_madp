@@ -333,11 +333,14 @@ end;
 
 procedure DrawNurek;
 var
-  i, j: BYTE;
+  i, j, c: BYTE;
 begin
   for j := 0 to 31 do
     for i := 0 to 18 do
-      PutPixel(i+140, j+40, NurekData[j * 19 + i]);
+      begin
+        c := NurekData[j * 19 + i];
+        if c > 0 then PutPixel(i+140, j+40, c);
+      end
 end;
 
 procedure DrawJajca;
