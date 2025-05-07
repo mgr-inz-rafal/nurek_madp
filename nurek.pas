@@ -96,14 +96,14 @@ var
   statuses: array[0..9] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
-      'Osiagnales dno, kontraktuj!',
+      'Osi'#17'gn'#17''#123'e'#23' dno, kontraktuj!',
       'Na powierzchni tylko cierpienie...',
-      'Osiagnieto limit krotkosci penisa',
-      'Za dugi huj, kurcz sie',
-      'Nie wolno wyjezdzac z planszy!',
-      'Wykryto zagrozenie autolodem',
-      'Smyrnieto kamien, to blad... Cofaj!',
-      ' Dinojajco zaplodnione, amen! '*
+      'Osi'#17'gnieto limit kr'#16'tko'#23'ci penisa',
+      'Za dugi huj, kurcz si'#4'',
+      'Nie wolno wyje'#24'd'#24'ac z planszy!',
+      'Jes zakas smyrania w'#123'asnego cia'#123'a',
+      'Smyrni'#4'to kamie'#13', to b'#123''#17'd... Cofaj!',
+      ' Dinojajco zap'#123'odnione, amen! '*
       );
   last_status: byte;
   just_hit_kamien: boolean;
@@ -434,7 +434,7 @@ procedure DrawSummaryHeaders;
 begin
   text_x := 2;
   text_y := 1;
-  write('Plansza:'*, ' 00  ', 'Rzydx:'*, ' @  ', 'Punkty:'*, ' (    ');
+  write('Plansza:'*, ' 00  ', 'Rzyd'#7':'*, ' @  ', 'Punkty:'*, ' (    ');
 end;
 
 procedure DrawSummaryRzydz;
