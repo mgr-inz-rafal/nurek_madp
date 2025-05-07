@@ -45,6 +45,25 @@ const
 	cmc_player = $2ab8;
 	cmc_modul = $2000;  
   ChujStartPos: BYTE = 140;
+	dl_game: array [0..93] of byte =
+	(
+     $70, $70, $70,
+     $4d, $60, $b0,
+
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, 
+     $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d, $0d,
+
+     $42, $60, $bf,
+     $02, $02, $02,
+
+     $41, lo(word(@dl_game)), hi(word(@dl_game))
+	);  
   
   //CHARSET_TILE_ADDRESS = $ac00;
   CHARSET_TILE_ADDRESS = $a800; // Higher mem is occupied (DL @ AFA2).
@@ -62,6 +81,7 @@ const
 
 var
 	msx: TCMC;  
+  dlist: word absolute 560;
   text_y: byte absolute 656;
   text_x: byte absolute 657;
   statuses: array[0..9] of ShortString = (
@@ -360,6 +380,7 @@ var
 
 begin
   InitGraph(7);
+  dlist:=word(@dl_game);
   CursorOff;
   CHBAS := Hi(CHARSET_TILE_ADDRESS);
 
