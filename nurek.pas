@@ -44,6 +44,7 @@ const
   ChujBlocked: BYTE = 2;
 	cmc_player = $2ab8;
 	cmc_modul = $2000;  
+  ChujStartPos: BYTE = 140;
   
   //CHARSET_TILE_ADDRESS = $ac00;
   CHARSET_TILE_ADDRESS = $a800; // Higher mem is occupied (DL @ AFA2).
@@ -91,7 +92,7 @@ type
     chuj_history_x: array[0..299] of SINGLE;
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
-    chuj_history_grid: array[0..80, 0..80] of BYTE;
+    chuj_history_grid: array[0..79, 0..79] of BYTE;
     current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
@@ -161,7 +162,7 @@ begin
   chuj_c := 0;
   chuj_s := ChujExtraction;
   chuj_p := 0;
-  chuj_history_x[chuj_p] := 140;
+  chuj_history_x[chuj_p] := ChujStartPos;
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
@@ -260,7 +261,7 @@ begin
           Exit(ChujMoveOutcome(OutOfAkwen));
         end;
 
-        if chuj_x > 140 then
+        if chuj_x >= 140 then
           if chuj_y > 38 then
              Exit(ChujMoveOutcome(AutoBlow))
           else 
