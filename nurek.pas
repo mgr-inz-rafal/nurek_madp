@@ -102,10 +102,11 @@ var
       'Za dugi huj, kurcz sie',
       'Nie wolno wyjezdzac z planszy!',
       'Wykryto zagrozenie autolodem',
-      'Smyrnieto kamien, to blad',
+      'Smyrnieto kamien, to blad... Cofaj!',
       ' Dinojajco zaplodnione, amen! '*
       );
   last_status: byte;
+  just_hit_kamien: boolean;
 
 {$r 'cmc_play.rc'}  
 {$r 'charset.rc'}  
@@ -543,6 +544,7 @@ begin
   };
   repeat DrawJajca until AreJajcaCorrect;
   ScreenBack;
+  just_hit_kamien := false;
 end;
 
 var
@@ -557,7 +559,7 @@ begin
 
   punkty := 0;
   rzydz := 9;
-  plansza := 9;
+  plansza := 1;
 
   InitGameLevel;
 
@@ -601,6 +603,11 @@ begin
         begin
           ShowStatus(ST_EXPANSJA);
           g.DrawChuj;
+          if just_hit_kamien then
+          begin
+            just_hit_kamien := false;
+            msx.init;
+          end;
         end;
       Contracted:
         begin
@@ -632,8 +639,17 @@ begin
           ShowStatus(ST_LODZIK);
         end;
       HitKamien:
-        begin
-          ShowStatus(ST_KAMIEN);
+        begin 
+          if not just_hit_kamien then
+          begin
+            ShowStatus(ST_KAMIEN);
+            just_hit_kamien := true;
+            msx.stop;
+            Delay(1234 shr 2);
+            Dec(rzydz);
+            DrawSummaryRzydz;
+            Delay(1234 shr 2);
+          end;
         end;
       HitJajco:
         begin
