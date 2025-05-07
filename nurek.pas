@@ -337,6 +337,39 @@ begin
       end
 end;
 
+function IsVerticalCorrect(x: BYTE): BOOLEAN;
+var i, c: BYTE;
+begin
+  for i := 0 to 79 do
+  begin
+    c := GetPixel(x, i);
+    if c <> 3 then Exit(true);
+  end;
+  Result := false;
+end;
+
+procedure ClearJajca;
+var x, y:  BYTE;
+begin
+  for x := 0 to 139 do
+    for y := 0 to 79 do
+      PutPixel(x, y, 0);
+end;
+
+function AreJajcaCorrect: BOOLEAN;
+var x, y:  BYTE;
+begin
+  for x := 0 to 139 do
+    begin
+      if IsVerticalCorrect(x) = false then 
+      begin
+        ClearJajca;
+        Exit(false);
+      end;
+    end;
+  Result := true;
+end;
+
 procedure DrawJajca;
 var
   i: BYTE;
@@ -430,6 +463,7 @@ var
 
 begin
   InitGraph(7);
+  Randomize;
 
   asm {
     ldx #$BA
@@ -486,7 +520,8 @@ begin
   g.Build;
 
   DrawNurek;
-  DrawJajca;
+  
+  repeat DrawJajca until AreJajcaCorrect;
 
   while not g.finish do
   begin
