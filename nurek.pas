@@ -123,7 +123,6 @@ type
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
     chuj_history_grid: array[0..79, 0..79] of BYTE;
-    current_delay: BYTE;
     finish: BOOLEAN;
     constructor Build;
     function MoveChuj: ChujMoveOutcome;
@@ -196,7 +195,6 @@ begin
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
-  current_delay := 20;
   finish := FALSE;
 end;  
 
@@ -385,18 +383,18 @@ begin
   Result := true;
 end;
 
-procedure DrawJajca;
+procedure DrawJajca(plansza: byte);
 var
   i: BYTE;
   JX, JY, JSX, JSY: BYTE;
 begin
-  for i := 0 to 6 do
+  for i := 0 to plansza + 5 do
   begin
     JX := Random(100);
     JY := Random(70) + 15;
     JSX := Random(5) + 5;
     JSY := Random(10) + 5;
-    SetColor(5-(i div 6 + 2));
+    SetColor(5-(i div (plansza + 5) + 2));
     FillEllipse(JX, JY, JSX, JSY);
   end;
 end;
@@ -542,13 +540,14 @@ begin
     stx $2C5
     sty $2C6
   };
-  repeat DrawJajca until AreJajcaCorrect;
+  repeat DrawJajca(plansza) until AreJajcaCorrect;
   ScreenBack;
   just_hit_kamien := false;
 end;
 
 var
   g: Game;
+  speed: Word;
 
 begin
   Randomize;
@@ -654,21 +653,11 @@ begin
       HitJajco:
         begin
           ShowStatus(ST_JAJCO);
-
-          // Stop music
           msx.stop;
-
-          // Wait a bit
           Delay(4321);
-
-          // Advance to next level
           Inc(plansza);
-
-          // Prepare new level
           InitGameLevel;
           g.Build;
-
-          // Start music again
           msx.init;
         end;
     end;
@@ -685,8 +674,16 @@ begin
       0: g.chuj_s := ChujContraction;
     end;
 
-    if g.current_delay > 0 then
-      Delay(g.current_delay);
+    if plansza <= 21 then
+    begin
+      speed := 100 - (plansza-1)*5;
+      text_x := 0;
+      text_y := 0;
+      write(speed);
+      if speed < 0 then
+        speed := 0;
+      Delay(speed);
+    end;
   end;
 
 end.
