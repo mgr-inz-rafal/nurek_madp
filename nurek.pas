@@ -87,6 +87,7 @@ const
 
 var
 	msx: TCMC;  
+  play_music: BOOLEAN = false;
   dlist: word absolute 560;
   text_y: byte absolute 656;
   text_x: byte absolute 657;
@@ -386,9 +387,23 @@ begin
   end;
 end;
 
+procedure ScreenOff;assembler ;
+asm {
+  lda #0
+  sta 559
+};
+end;
+
+procedure ScreenBack;assembler ;
+asm {
+  lda #34
+  sta 559
+};
+end;
+
 procedure vbi_routine_os;interrupt;
 begin
-  msx.play;
+  if play_music then msx.play;
   asm {
     jmp XITVBV
     };
@@ -463,6 +478,7 @@ var
 
 begin
   InitGraph(7);
+  ScreenOff;
   Randomize;
 
   asm {
@@ -522,6 +538,8 @@ begin
   DrawNurek;
   
   repeat DrawJajca until AreJajcaCorrect;
+  ScreenBack;
+  play_music := true;
 
   while not g.finish do
   begin
