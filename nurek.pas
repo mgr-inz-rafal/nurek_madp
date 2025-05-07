@@ -42,7 +42,7 @@ const
   ChujExtraction: BYTE = 0;
   ChujContraction: BYTE = 1;
   ChujBlocked: BYTE = 2;
-	cmc_player = $2ab8;
+	cmc_player = $2afb;
 	cmc_modul = $2000;  
   ChujStartPos: BYTE = 140;
 	dl_game: array [0..94] of byte =
@@ -594,6 +594,8 @@ begin
     // jsr SETVBV
 
 
+  msx.stop;
+  msx.song(1);
 
   g.Build;
 
@@ -646,20 +648,26 @@ begin
             ShowStatus(ST_KAMIEN);
             just_hit_kamien := true;
             msx.stop;
-            Delay(1234 shr 2);
+            Delay(300);
+            msx.song(2);
+            Delay(1234);
             Dec(rzydz);
             DrawSummaryRzydz;
-            Delay(1234 shr 2);
+            Delay(1234);
+            msx.stop
           end;
         end;
       HitJajco:
         begin
           ShowStatus(ST_JAJCO);
           msx.stop;
+          Delay(300);
+          msx.song(3);
           Delay(4321);
           Inc(plansza);
           InitGameLevel;
           g.Build;
+          msx.stop;
           msx.song(1);
         end;
     end;
