@@ -87,7 +87,6 @@ const
 
 var
 	msx: TCMC;  
-  play_music: BOOLEAN = false;
   dlist: word absolute 560;
   text_y: byte absolute 656;
   text_x: byte absolute 657;
@@ -104,9 +103,9 @@ var
       'Nie wolno wyjezdzac z planszy!',
       'Wykryto zagrozenie autolodem',
       'Smyrnieto kamien, to blad',
-      'Dinojajco zaplodnione, amen!'
+      ' Dinojajco zaplodnione, amen! '*
       );
-  last_status: byte = -1;
+  last_status: byte;
 
 {$r 'cmc_play.rc'}  
 {$r 'charset.rc'}  
@@ -200,19 +199,11 @@ begin
   finish := FALSE;
 end;  
 
-function DigitCount(n: Word): Word;
-begin
-  if n = 0 then
-    DigitCount := 1
-  else
-    DigitCount := Trunc(Log10(single(n))) + 1;
-end;
-
 procedure DrawSummaryPunkty;
 begin
   text_y := 1;
   text_x := 33;
-  write(punkty, '    ');
+  write(punkty, '   ');
 end;
 
 procedure Game.DrawChuj;
@@ -425,7 +416,7 @@ end;
 
 procedure vbi_routine_os;interrupt;
 begin
-  if play_music then msx.play;
+  msx.play;
   asm {
     jmp XITVBV
     };
@@ -455,7 +446,9 @@ end;
 procedure DrawSummaryPlansza;
 begin
   text_y := 1;
-  text_x := 11+2-DigitCount(plansza);
+  text_x := 11;
+  if plansza < 10 then
+    Inc(text_x);
   write(plansza);
 end;
 
@@ -523,18 +516,22 @@ asm {
 
 end;		
 
-var
-  g: Game;
-
+procedure InitGameLevel;
 begin
   InitGraph(7);
+  last_status := -1;
   ScreenOff;
   DrawSummaryHeaders;
-  Randomize;
 
-  punkty := 0;
-  rzydz := 9;
-  plansza := 1;
+  dlist:=word(@dl_game);
+  SetIntVec(iDLI, @dli_game);
+  nmien:=%11000000;
+
+  CursorOff;
+  CHBAS := Hi(CHARSET_TILE_ADDRESS);
+
+  DrawNurek;
+  DrawSummaryValues;
 
   asm {
     ldx #$BA
@@ -544,18 +541,25 @@ begin
     stx $2C5
     sty $2C6
   };
+  repeat DrawJajca until AreJajcaCorrect;
+  ScreenBack;
+end;
 
-  dlist:=word(@dl_game);
-  SetIntVec(iDLI, @dli_game);
-  nmien:=%11000000;
+var
+  g: Game;
 
-  CursorOff;
-  CHBAS := Hi(CHARSET_TILE_ADDRESS);
+begin
+  Randomize;
 
 	msx.player:=pointer(cmc_player);
 	msx.modul:=pointer(cmc_modul);  
-
 	msx.init;
+
+  punkty := 0;
+  rzydz := 9;
+  plansza := 9;
+
+  InitGameLevel;
 
   // With OS
   asm {
@@ -589,13 +593,6 @@ begin
 
 
   g.Build;
-
-  DrawNurek;
-  DrawSummaryValues;
-  
-  repeat DrawJajca until AreJajcaCorrect;
-  ScreenBack;
-  play_music := true;
 
   while not g.finish do
   begin
@@ -641,6 +638,22 @@ begin
       HitJajco:
         begin
           ShowStatus(ST_JAJCO);
+
+          // Stop music
+          msx.stop;
+
+          // Wait a bit
+          Delay(4321);
+
+          // Advance to next level
+          Inc(plansza);
+
+          // Prepare new level
+          InitGameLevel;
+          g.Build;
+
+          // Start music again
+          msx.init;
         end;
     end;
 
