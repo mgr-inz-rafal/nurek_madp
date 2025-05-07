@@ -91,6 +91,9 @@ var
   dlist: word absolute 560;
   text_y: byte absolute 656;
   text_x: byte absolute 657;
+  plansza: byte;
+  rzydz: byte;
+  punkty: word;
   statuses: array[0..9] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
@@ -197,6 +200,21 @@ begin
   finish := FALSE;
 end;  
 
+function DigitCount(n: Word): Word;
+begin
+  if n = 0 then
+    DigitCount := 1
+  else
+    DigitCount := Trunc(Log10(single(n))) + 1;
+end;
+
+procedure DrawSummaryPunkty;
+begin
+  text_y := 1;
+  text_x := 33;
+  write(punkty, '    ');
+end;
+
 procedure Game.DrawChuj;
 var
   chuj_x, chuj_y: BYTE;
@@ -214,6 +232,8 @@ begin
       begin
         SetColor(Byte(Game.DecrementNibble(chuj_x, chuj_y) > 0));
         Dec(chuj_p);
+        Dec(punkty);
+        DrawSummaryPunkty;
       end
   end;
 
@@ -301,7 +321,9 @@ begin
         if pix = 2 then 
           Exit(ChujMoveOutcome(HitJajco));
 
-        chuj_p := chuj_p + 1;
+        Inc(chuj_p);
+        Inc(punkty);
+        DrawSummaryPunkty;
 
         chuj_history_x[chuj_p] := chuj_x;
         chuj_history_y[chuj_p] := chuj_y;
@@ -416,6 +438,34 @@ begin
   // empty
 end;
 
+procedure DrawSummaryHeaders;
+begin
+  text_x := 2;
+  text_y := 1;
+  write('Plansza: 00  Rzydx: @  Punkty: (    ');
+end;
+
+procedure DrawSummaryRzydz;
+begin
+  text_y := 1;
+  text_x := 22;
+  write(rzydz);
+end;
+
+procedure DrawSummaryPlansza;
+begin
+  text_y := 1;
+  text_x := 11+2-DigitCount(plansza);
+  write(plansza);
+end;
+
+procedure DrawSummaryValues;
+begin
+  DrawSummaryPunkty;
+  DrawSummaryRzydz;
+  DrawSummaryPlansza;
+end;
+
 procedure ShowStatus(id: byte);
 var
   s: string;
@@ -479,7 +529,12 @@ var
 begin
   InitGraph(7);
   ScreenOff;
+  DrawSummaryHeaders;
   Randomize;
+
+  punkty := 0;
+  rzydz := 9;
+  plansza := 1;
 
   asm {
     ldx #$BA
@@ -536,6 +591,7 @@ begin
   g.Build;
 
   DrawNurek;
+  DrawSummaryValues;
   
   repeat DrawJajca until AreJajcaCorrect;
   ScreenBack;
