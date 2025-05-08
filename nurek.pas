@@ -589,10 +589,15 @@ begin
   Poke($BE70+40+12, Byte('!'~));
   Delay(2000);
 
-  writeln('      Gra przeznaczona na zlot');
-  writeln('         ',' GRAWITJAJCA 2025 '*);
-  writeln;
+  text_x := 8;
+  text_y := 0;
+  writeln('Gra przeznaczona na zlot');
+  text_x := 11;
+  text_y := 1;
+  writeln(' GRAWITJAJCA 2025 '*);
   Delay(1000);
+  text_x := 2;
+  text_y := 3;
   write('Version post-zlotowa (MadPaskaloska)');
 
   repeat until strig0 = 0;
@@ -688,8 +693,8 @@ begin
     StartScreen;
 
     punkty := 0;
-    rzydz := 0;
-    plansza := 15;
+    rzydz := 9;
+    plansza := 1;
 
     InitGameLevel;
 
