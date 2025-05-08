@@ -581,7 +581,7 @@ begin
   writeln('                Muzyka:           ','Miker'*);
   writeln('Doradztwo jak schowa'#22'');
   writeln('    kursor i wy'#123''#17'czy'#22'');
-  writeln('       ekran komputera:           ','Lewis'*);
+  writeln('       ekran komputera:           ','lewiS'*);
   writeln;
   writeln;
   writeln;
