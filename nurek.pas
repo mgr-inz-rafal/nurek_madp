@@ -548,8 +548,56 @@ begin
   just_hit_kamien := false;
 end;
 
-procedure StartScreen;
+procedure MemPrint(address: word; s: String);
+var
+  i, c: byte;
 begin
+  for i := 1 to Length(s) do
+  begin
+    c := Byte(s[i]);
+    Poke(address + (i-1), c);
+  end;
+end;
+
+procedure StartScreen;
+var
+  s: String;
+  d: byte;
+begin
+  InitGraph(2);
+  CursorOff;
+  CHBAS := Hi(CHARSET_TILE_ADDRESS);
+
+  s := 'NUREK Z WIELKIM...'~;
+  MemPrint($BE70+1, s);
+  Delay(2500);
+
+  d := 133;
+  msx.song(0);
+  Poke($BE70+40+6, Byte('s'~));
+  Delay(d);
+  Poke($BE70+40+7, 128+Byte('E'~));
+  Delay(d);
+  Poke($BE70+40+8, 128+Byte('r'~));
+  Delay(d);
+  Poke($BE70+40+9, Byte('c'~));
+  Delay(d);
+  Poke($BE70+40+10, 128+Byte('E'~));
+  Delay(d);
+  Poke($BE70+40+11, 128+Byte('m'~));
+  Delay(d);
+  Poke($BE70+40+12, Byte('!'~));
+  Delay(2000);
+
+  writeln('      Gra przeznaczona na zlot');
+  writeln('         ',' GRAWITJAJCA 2025 '*);
+  writeln;
+  Delay(1000);
+  write('Version post-zlotowa (MadPaskaloska)');
+
+  repeat until strig0 = 0;
+  Delay(200);
+
   InitGraph(0);
   asm {
     ldx #$0f
@@ -561,7 +609,6 @@ begin
 
   CursorOff;
   CHBAS := Hi(CHARSET_TILE_ADDRESS);
-  msx.song(0);
 
   gotoxy(3,0);
   writeln('Nurcy cz'#4'sto niezdrowo interesuj'#17' si'#4'');
