@@ -84,6 +84,7 @@ const
   ST_LODZIK = 7;
   ST_KAMIEN = 8;
   ST_JAJCO = 9;
+  ST_KAMIEN_FINAL = 10;
 
 var
 	msx: TCMC;  
@@ -93,17 +94,18 @@ var
   plansza: byte;
   rzydz: byte;
   punkty: word;
-  statuses: array[0..9] of ShortString = (
+  statuses: array[0..10] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osi'#17'gn'#17''#123'e'#23' dno, kontraktuj!',
       'Na powierzchni tylko cierpienie...',
-      'Osi'#17'gnieto limit kr'#16'tko'#23'ci penisa',
+      'Osi'#17'gni'#4'to limit kr'#16'tko'#23'ci penisa',
       'Za dugi huj, kurcz si'#4'',
       'Nie wolno wyje'#24'd'#24'ac z planszy!',
       'Jes zakas smyrania w'#123'asnego cia'#123'a',
       'Smyrni'#4'to kamie'#13', to b'#123''#17'd... Cofaj!',
-      ' Dinojajco zap'#123'odnione, amen! '*
+      ' Dinojajco zap'#123'odnione, amen! '*,
+      'Smyrni'#4'to kamie'#13', to b'#123''#17'd...!'
       );
   last_status: byte;
   just_hit_kamien: boolean;
@@ -123,7 +125,6 @@ type
     chuj_history_y: array[0..299] of SINGLE;
     chuj_history_a: array[0..299] of SINGLE;
     chuj_history_grid: array[0..79, 0..79] of BYTE;
-    finish: BOOLEAN;
     constructor Build;
     function MoveChuj: ChujMoveOutcome;
     procedure DrawChuj;
@@ -195,7 +196,6 @@ begin
   chuj_history_y[chuj_p] := 62;
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
-  finish := FALSE;
 end;  
 
 procedure DrawSummaryPunkty;
@@ -439,7 +439,10 @@ procedure DrawSummaryRzydz;
 begin
   text_y := 1;
   text_x := 22;
-  write(rzydz);
+  if rzydz = -1 then
+    write('-')
+  else
+    write(rzydz);
 end;
 
 procedure DrawSummaryPlansza;
@@ -545,6 +548,31 @@ begin
   just_hit_kamien := false;
 end;
 
+procedure EndScreen;
+begin
+    InitGraph(0);
+    asm {
+      ldx #$0f
+      ldy #$00
+      stx $2C5
+      sty $2C6
+    };
+
+    CursorOff;
+    CHBAS := Hi(CHARSET_TILE_ADDRESS);
+    writeln;
+    writeln('Nurcy cz'#4'sto umieraj'#17'');
+    writeln('   gdy swym chujem');
+    writeln('   g'#123'az smyraj'#17'...');
+    writeln;writeln;writeln;writeln;writeln;writeln;
+    writeln('   kontynuacja rozgrywki jest mo'#24'liwa');
+    writeln('       tylko po wci'#23'ni'#4'ciu fajer!');
+    writeln;writeln;writeln;writeln;writeln;writeln;
+    writeln('   ','Tw'#16'j wspania'#123'y wynik to:'*, ' ', punkty, ' ', 'pkt!'*);
+
+    repeat until strig0 = 0;
+end;
+
 var
   g: Game;
   speed: Word;
@@ -555,7 +583,6 @@ begin
 	msx.player:=pointer(cmc_player);
 	msx.modul:=pointer(cmc_modul);  
 	msx.initnosong;
-  msx.song(0);
 
   // With OS
   asm {
@@ -565,132 +592,141 @@ begin
     jsr SETVBV
   };
 
-
-  punkty := 0;
-  rzydz := 9;
-  plansza := 15;
-
-  InitGameLevel;
-
-
-  // Without OS, but failed
-  // GetIntVec(iVBLD, old_vbl);
-  // SetIntVec(iVBLD, @vbi_routine_empty);
-
-  // asm {
-  //   SEI
-  //   LDA #<vbi_routine
-  //   STA $0222
-  //   LDA #>vbi_routine
-  //   STA $0223
-  //   CLI
-  // };
-
-//  repeat until keypressed;
-
-    // ldy <vbi_routine
-    // ldx >vbi_routine
-    // lda #7
-    // jsr SETVBV
-
-
-  msx.stop;
-  msx.song(1);
-
-  g.Build;
-
-  while not g.finish do
+  while not false do
   begin
-    case g.MoveChuj of
-      Extracted: 
-        begin
-          ShowStatus(ST_EXPANSJA);
-          g.DrawChuj;
-          if just_hit_kamien then
+    msx.song(0);
+
+    punkty := 0;
+    rzydz := 0;
+    plansza := 15;
+
+    InitGameLevel;
+
+    // Without OS, but failed
+    // GetIntVec(iVBLD, old_vbl);
+    // SetIntVec(iVBLD, @vbi_routine_empty);
+
+    // asm {
+    //   SEI
+    //   LDA #<vbi_routine
+    //   STA $0222
+    //   LDA #>vbi_routine
+    //   STA $0223
+    //   CLI
+    // };
+
+  //  repeat until keypressed;
+
+      // ldy <vbi_routine
+      // ldx >vbi_routine
+      // lda #7
+      // jsr SETVBV
+
+
+    msx.stop;
+    msx.song(1);
+
+    g.Build;
+
+    while not false do
+    begin
+      case g.MoveChuj of
+        Extracted: 
           begin
-            just_hit_kamien := false;
-            msx.song(1);
+            ShowStatus(ST_EXPANSJA);
+            g.DrawChuj;
+            if just_hit_kamien then
+            begin
+              just_hit_kamien := false;
+              msx.song(1);
+            end;
           end;
-        end;
-      Contracted:
-        begin
-          ShowStatus(ST_KONTRAKCJA);
-          g.DrawChuj;
-        end;
-      HitBottom:
-        begin
-          ShowStatus(ST_DNO);
-        end;
-      Surfaced:
-        begin
-          ShowStatus(ST_CIERPIENIE);
-        end;
-      TooShort:
-        begin
-          ShowStatus(ST_KRUTKI);
-        end;
-      TooLong:
-        begin
-          ShowStatus(ST_DUGI);
-        end;
-      OutOfAkwen:
-        begin
-          ShowStatus(ST_PLANSZA);
-        end;
-      AutoBlow:
-        begin
-          ShowStatus(ST_LODZIK);
-        end;
-      HitKamien:
-        begin 
-          if not just_hit_kamien then
+        Contracted:
           begin
-            ShowStatus(ST_KAMIEN);
-            just_hit_kamien := true;
+            ShowStatus(ST_KONTRAKCJA);
+            g.DrawChuj;
+          end;
+        HitBottom:
+          begin
+            ShowStatus(ST_DNO);
+          end;
+        Surfaced:
+          begin
+            ShowStatus(ST_CIERPIENIE);
+          end;
+        TooShort:
+          begin
+            ShowStatus(ST_KRUTKI);
+          end;
+        TooLong:
+          begin
+            ShowStatus(ST_DUGI);
+          end;
+        OutOfAkwen:
+          begin
+            ShowStatus(ST_PLANSZA);
+          end;
+        AutoBlow:
+          begin
+            ShowStatus(ST_LODZIK);
+          end;
+        HitKamien:
+          begin 
+            if not just_hit_kamien then
+            begin
+              if rzydz > 0 then
+                ShowStatus(ST_KAMIEN)
+              else
+                ShowStatus(ST_KAMIEN_FINAL);
+              just_hit_kamien := true;
+              msx.stop;
+              Delay(300);
+              msx.song(2);
+              Delay(1234);
+              Dec(rzydz);
+              DrawSummaryRzydz;
+              Delay(1234);
+              msx.stop;
+              if rzydz = -1 then break;
+            end;
+          end;
+        HitJajco:
+          begin
+            ShowStatus(ST_JAJCO);
             msx.stop;
             Delay(300);
-            msx.song(2);
-            Delay(1234);
-            Dec(rzydz);
-            DrawSummaryRzydz;
-            Delay(1234);
-            msx.stop
+            msx.song(3);
+            Delay(4321);
+            Inc(plansza);
+            InitGameLevel;
+            g.Build;
+            msx.stop;
+            msx.song(1);
           end;
-        end;
-      HitJajco:
-        begin
-          ShowStatus(ST_JAJCO);
-          msx.stop;
-          Delay(300);
-          msx.song(3);
-          Delay(4321);
-          Inc(plansza);
-          InitGameLevel;
-          g.Build;
-          msx.stop;
-          msx.song(1);
-        end;
+      end;
+
+      case joy_1 of
+        joy_left: g.ChujLeft;
+        joy_right: g.ChujRight;
+      else
+        g.ChujProstowac
+      end;
+
+      case strig0 of
+        1: g.chuj_s := ChujExtraction;
+        0: g.chuj_s := ChujContraction;
+      end;
+
+      if plansza <= 21 then
+      begin
+        speed := 100 - (plansza-1)*5;
+        Delay(speed);
+      end;
     end;
 
-    case joy_1 of
-      joy_left: g.ChujLeft;
-      joy_right: g.ChujRight;
-    else
-      g.ChujProstowac
-    end;
+    EndScreen;
 
-    case strig0 of
-      1: g.chuj_s := ChujExtraction;
-      0: g.chuj_s := ChujContraction;
-    end;
-
-    if plansza <= 21 then
-    begin
-      speed := 100 - (plansza-1)*5;
-      Delay(speed);
-    end;
-  end;
-
+  end
 end.
 
 
