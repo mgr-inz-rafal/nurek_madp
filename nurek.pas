@@ -101,7 +101,7 @@ var
       'Na powierzchni tylko cierpienie...',
       'Osi'#17'gni'#4'to limit kr'#16'tko'#23'ci penisa',
       'Za dugi huj, kurcz si'#4'',
-      'Nie wolno wyje'#24'd'#24'ac z planszy!',
+      'Nie wolno wyje'#24'd'#24'a'#22' z planszy!',
       'Jes zakas smyrania w'#123'asnego cia'#123'a',
       'Smyrni'#4'to kamie'#13', to b'#123''#17'd... Cofaj!',
       ' Dinojajco zap'#123'odnione, amen! '*,
@@ -548,6 +548,50 @@ begin
   just_hit_kamien := false;
 end;
 
+procedure StartScreen;
+begin
+  InitGraph(0);
+  asm {
+    ldx #$0f
+    ldy #$00
+    stx $2C5
+    sty $2C6
+    sty 82
+  };
+
+  CursorOff;
+  CHBAS := Hi(CHARSET_TILE_ADDRESS);
+  msx.song(0);
+
+  gotoxy(3,0);
+  writeln('Nurcy cz'#4'sto niezdrowo interesuj'#17' si'#4'');
+  write('jajcami. Gdy wi'#4'c profesor Oble'#23'no, pra-');
+  write('cownik WCHUJ (Wydzia'#123' Chemii Uniwersyte-');
+  writeln('tu Jagiello'#13'skiego) wyczu'#123' na dnie Odry');
+  write('w Krakowie dinozaurowe jajca natychmiast');
+  write('podj'#17''#123' si'#4' pr'#16'b inseminacji. Pomusz mu w');
+  writeln('tym delikatnie steruj'#17'c jego pa'#123'k'#17'.');
+  writeln;
+  writeln('  ',' Uwaga! Jajca dinozaur'#16'w s'#17' zielone! '*);
+  writeln;
+  writeln;
+  writeln;
+  writeln('                   Kod:  ','mgr in'*#24'. Rafa'#123''*);
+  writeln('               Grafika:  ','mgr in'*#24'. Rafa'#123''*);
+  writeln('                Muzyka:           ','Miker'*);
+  writeln('Doradztwo jak schowa'#22'');
+  writeln('    kursor i wy'#123''#17'czy'#22'');
+  writeln('       ekran komputera:           ','Lewis'*);
+  writeln;
+  writeln;
+  writeln;
+  writeln('        Aby rozpocz'#17''#22' gr'#17' nale'#24'y');
+  writeln('               wdusi'#22' fajer');
+  
+  repeat until strig0 = 0;
+  msx.stop;
+end;
+
 procedure EndScreen;
 begin
     InitGraph(0);
@@ -594,7 +638,7 @@ begin
 
   while not false do
   begin
-    msx.song(0);
+    StartScreen;
 
     punkty := 0;
     rzydz := 0;
