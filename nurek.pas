@@ -637,7 +637,7 @@ begin
   writeln;
   writeln;
   writeln;
-  writeln('        Aby rozpocz'#17''#22' gr'#17' nale'#24'y');
+  writeln('        Aby rozpocz'#17''#22' gr'#4' nale'#24'y');
   writeln('               wdusi'#22' fajer');
   
   repeat until strig0 = 0;
