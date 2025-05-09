@@ -596,9 +596,9 @@ begin
   text_y := 1;
   writeln(' GRAWITJAJCA 2025 '*);
   Delay(500);
-  text_x := 2;
+  text_x := 1;
   text_y := 3;
-  write('Version post-zlotowa (MadPaskaloska)');
+  write('Version 3 post-zlotowa (MadPaskaloska)');
 
   repeat until strig0 = 0;
   Delay(200);
