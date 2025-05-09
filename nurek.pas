@@ -726,6 +726,7 @@ begin
 
     while not false do
     begin
+      if PEEK(754) = 28 then begin msx.stop; Poke(754, 255); break; end;
       atract := 0;
       case g.MoveChuj of
         Extracted: 
