@@ -570,7 +570,7 @@ begin
 
   s := 'NUREK Z WIELKIM...'~;
   MemPrint($BE70+1, s);
-  Delay(2500);
+  Delay(1500);
 
   d := 133;
   msx.song(0);
@@ -587,7 +587,7 @@ begin
   Poke($BE70+40+11, 128+Byte('m'~));
   Delay(d);
   Poke($BE70+40+12, Byte('!'~));
-  Delay(2000);
+  Delay(701);
 
   text_x := 8;
   text_y := 0;
@@ -595,7 +595,7 @@ begin
   text_x := 11;
   text_y := 1;
   writeln(' GRAWITJAJCA 2025 '*);
-  Delay(1000);
+  Delay(500);
   text_x := 2;
   text_y := 3;
   write('Version post-zlotowa (MadPaskaloska)');
