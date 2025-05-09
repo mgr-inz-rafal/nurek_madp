@@ -726,6 +726,7 @@ begin
 
     while not false do
     begin
+      atract := 0;
       case g.MoveChuj of
         Extracted: 
           begin
