@@ -202,7 +202,7 @@ procedure DrawSummaryPunkty;
 begin
   text_y := 1;
   text_x := 33;
-  write(punkty, '   ');
+  write(punkty, '  ');
 end;
 
 procedure Game.DrawChuj;
