@@ -4,6 +4,8 @@
 uses crt, graph, math, joystick, cmc, atari;
 
 const
+  COLOR_KAMIEN: BYTE = 3;
+  COLOR_JAJCO: BYTE = 2;
   TOTAL_MAXIMUM_JAJEC: BYTE = 66;
   SUMMARY_Y: BYTE = 2;
   KOMPENSACJA_Y: BYTE = 1;
@@ -78,6 +80,7 @@ const
   CHARSET_TILE_ADDRESS = $a800; // Higher mem is occupied (DL @ AFA2).
   MUTACJA_MARKER_START = $BF60+15+2+40;
   MUTACJA_MARKER_END = MUTACJA_MARKER_START+20+1;
+  //MUTACJA_MARKER_END = MUTACJA_MARKER_START+1+1;
 
   ST_EXPANSJA = 0;
   ST_KONTRAKCJA = 1;
@@ -229,7 +232,7 @@ begin
   text_y := KOMPENSACJA_Y;
   text_x := 1;
   if stracono then
-    write('Mutajca jajca: [---------------------]')
+    write('Mutajca jajca: [^^^^^^^^^^^^^^^^^^^^^]')
   else
     write('Brak uszczerbku, brak planowej mutacji');
   
@@ -434,7 +437,6 @@ procedure CalculateJajca(plansza: byte);
 var
   i: BYTE;
   JX, JY, JSX, JSY: BYTE;
-  max_jajca: BYTE;
 begin
   current_dinojajco := 0;
   for i := 0 to MaxJajcaCount(plansza) do
@@ -447,23 +449,34 @@ begin
   end;
 end;
 
+procedure DrawJajco(i: BYTE; c: BYTE; slow: boolean);
+var
+  JX, JY, JSX, JSY: BYTE;
+  ii, limit: byte;
+begin
+    UnpackCardinalToJajco(jajca[i], JX, JY, JSX, JSY);
+    SetColor(c);
+    if slow then
+    begin
+      if JSX > JSY then limit := JSY else limit := JSX;
+      for ii := 0 to limit do
+        FillEllipse(JX, JY, ii, ii);
+    end;
+    FillEllipse(JX, JY, JSX, JSY);
+end;
+
 procedure DrawJajca(plansza: byte);
 var
   i: BYTE;
-  JX, JY, JSX, JSY: BYTE;
-  max_jajca: BYTE;
   c: BYTE;
 begin
   for i := 0 to MaxJajcaCount(plansza) do
   begin
-    UnpackCardinalToJajco(jajca[i], JX, JY, JSX, JSY);
-    //SetColor(5-(i div (plansza + 5) + 2));
     if i = current_dinojajco then
-      c := 2
+      c := COLOR_JAJCO
     else
-      c := 3;
-    SetColor(c);
-    FillEllipse(JX, JY, JSX, JSY);
+      c := COLOR_KAMIEN;
+    DrawJajco(i, c, false);
   end;
 end;
  
@@ -545,10 +558,18 @@ begin
   text_x := 20-Length(s) div 2;
   write(s);
 end;
+
 procedure Mutation;
 begin
+  msx.stop;
   ShowStatus(ST_TRANZYCJA);
-  Delay(5000);
+  Delay(1000);
+  DrawJajco(current_dinojajco, COLOR_KAMIEN, true);
+  Delay(100);
+  Inc(current_dinojajco);
+  if current_dinojajco > MaxJajcaCount(plansza) then
+    current_dinojajco := 0;  
+  DrawJajco(current_dinojajco, COLOR_JAJCO, true);    
 end;
 
 procedure dli_game;assembler;interrupt;
@@ -722,9 +743,10 @@ end;
 
 procedure InitMutacja;
 begin
-  mutacja_za := Random(27) + 13;
+  mutacja_za := Random(7) + 8;
   obecna_mutacja := 0;
   stracono := true;
+  mutacja_marker := MUTACJA_MARKER_START;
   DrawSummaryKompensacja;
 end;
 
@@ -735,11 +757,13 @@ begin
   if obecna_mutacja = mutacja_za then
   begin;
     obecna_mutacja := 0;
-    Poke(mutacja_marker, 65);
+    Poke(mutacja_marker, 124);
     Inc(mutacja_marker);
     if mutacja_marker = MUTACJA_MARKER_END then
     begin
       Mutation;
+      msx.song(1);
+      InitMutacja;
     end;
   end;
 end;
@@ -790,7 +814,7 @@ begin
 
   while not false do
   begin
-    //StartScreen;
+    StartScreen;
 
     punkty := 0;
     rzydz := 9;
@@ -798,7 +822,7 @@ begin
     stracono := false;
     mutacja_marker := MUTACJA_MARKER_START;
 
-    InitMutacja;
+//    InitMutacja;
 
     InitGameLevel;
 
@@ -830,11 +854,10 @@ begin
 
     while not false do
     begin
-      //if PEEK(754) = 28 then begin msx.stop; Poke(754, 255); break; end;
-      if PEEK(754) = 28 then begin 
-        Mutation;
-        Delay(5000);
-      end;
+      if PEEK(754) = 28 then begin msx.stop; Poke(754, 255); break; end;
+      // if PEEK(754) = 28 then begin 
+      //   Mutation;
+      // end;
       atract := 0;
       case g.MoveChuj of
         Extracted: 
@@ -893,6 +916,7 @@ begin
               Dec(rzydz);
               DrawSummaryRzydz;
               Delay(1234);
+              InitMutacja;
               msx.stop;
               if rzydz = -1 then break;
             end;
