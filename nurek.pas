@@ -5,6 +5,7 @@ uses crt, graph, math, joystick, cmc, atari;
 
 const
   SUMMARY_Y: BYTE = 2;
+  KOMPENSACJA_Y: BYTE = 1;
   NurekData: array[0..607] of BYTE = (
     0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,
     0,0,0,0,0,0,2,2,0,0,0,0,0,2,2,0,0,0,0,
@@ -46,7 +47,7 @@ const
 	cmc_player = $2afb;
 	cmc_modul = $2000;  
   ChujStartPos: BYTE = 140;
-	dl_game: array [0..94] of byte =
+	dl_game: array [0..96] of byte =
 	(
      $70, $70, $70,                                          
      %11110000,                                         
@@ -66,7 +67,7 @@ const
      %10001101,
 
      $42, $60, $bf,
-     $02, $02, $02,
+     $02, $10, $02, $10, $02,
 
      %01000001,                                         
      lo(word(@dl_game)), hi(word(@dl_game))
@@ -74,6 +75,8 @@ const
   
   //CHARSET_TILE_ADDRESS = $ac00;
   CHARSET_TILE_ADDRESS = $a800; // Higher mem is occupied (DL @ AFA2).
+  MUTACJA_MARKER_START = $BF60+15+2+40;
+  MUTACJA_MARKER_END = MUTACJA_MARKER_START+20+1;
 
   ST_EXPANSJA = 0;
   ST_KONTRAKCJA = 1;
@@ -86,6 +89,7 @@ const
   ST_KAMIEN = 8;
   ST_JAJCO = 9;
   ST_KAMIEN_FINAL = 10;
+  ST_TRANZYCJA = 11;
 
 var
 	msx: TCMC;  
@@ -95,7 +99,11 @@ var
   plansza: byte;
   rzydz: byte;
   punkty: word;
-  statuses: array[0..10] of ShortString = (
+  stracono: boolean;
+  mutacja_za: Word;
+  obecna_mutacja: Word;
+  mutacja_marker: Word;
+  statuses: array[0..11] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
       'Osi'#17'gn'#17''#123'e'#23' dno, kontraktuj!',
@@ -106,7 +114,8 @@ var
       'Jes zakas smyrania w'#123'asnego cia'#123'a',
       'Smyrni'#4'to kamie'#13', to b'#123''#17'd... Cofaj!',
       ' Dinojajco zap'#123'odnione, amen! '*,
-      'Smyrni'#4'to kamie'#13', to b'#123''#17'd...!'
+      'Smyrni'#4'to kamie'#13', to b'#123''#17'd...!',
+      'Dokonuj'#4' tranzycji...'
       );
   last_status: byte;
   just_hit_kamien: boolean;
@@ -199,6 +208,17 @@ begin
   chuj_history_a[chuj_p] := DegToRad(single(270));
   FillChar(chuj_history_grid, SizeOf(chuj_history_grid), 0);
 end;  
+
+procedure DrawSummaryKompensacja;
+begin
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  if stracono then
+    write('Mutajca jajca: [---------------------]')
+  else
+    write('Brak uszczerbku, brak planowej mutacji');
+  
+end;
 
 procedure DrawSummaryPunkty;
 begin
@@ -461,6 +481,7 @@ begin
   DrawSummaryPunkty;
   DrawSummaryRzydz;
   DrawSummaryPlansza;
+  DrawSummaryKompensacja;
 end;
 
 procedure ShowStatus(id: byte);
@@ -477,7 +498,11 @@ begin
   text_x := 20-Length(s) div 2;
   write(s);
 end;
-
+procedure Mutation;
+begin
+  ShowStatus(ST_TRANZYCJA);
+  Delay(5000);
+end;
 
 procedure dli_game;assembler;interrupt;
 asm {
@@ -646,6 +671,30 @@ begin
   msx.stop;
 end;
 
+procedure InitMutacja;
+begin
+  mutacja_za := Random(27) + 13;
+  obecna_mutacja := 0;
+  stracono := true;
+  DrawSummaryKompensacja;
+end;
+
+procedure HandleMutacja;
+begin
+  if Not stracono then Exit;
+  Inc(obecna_mutacja);
+  if obecna_mutacja = mutacja_za then
+  begin;
+    obecna_mutacja := 0;
+    Poke(mutacja_marker, 65);
+    Inc(mutacja_marker);
+    if mutacja_marker = MUTACJA_MARKER_END then
+    begin
+      Mutation;
+    end;
+  end;
+end;
+
 procedure EndScreen;
 begin
     InitGraph(0);
@@ -692,11 +741,15 @@ begin
 
   while not false do
   begin
-    StartScreen;
+    //StartScreen;
 
     punkty := 0;
     rzydz := 9;
     plansza := 1;
+    stracono := false;
+    mutacja_marker := MUTACJA_MARKER_START;
+
+    InitMutacja;
 
     InitGameLevel;
 
@@ -728,13 +781,18 @@ begin
 
     while not false do
     begin
-      if PEEK(754) = 28 then begin msx.stop; Poke(754, 255); break; end;
+      //if PEEK(754) = 28 then begin msx.stop; Poke(754, 255); break; end;
+      if PEEK(754) = 28 then begin 
+        Mutation;
+        Delay(5000);
+      end;
       atract := 0;
       case g.MoveChuj of
         Extracted: 
           begin
             ShowStatus(ST_EXPANSJA);
             g.DrawChuj;
+            HandleMutacja;
             if just_hit_kamien then
             begin
               just_hit_kamien := false;
@@ -777,9 +835,9 @@ begin
               if rzydz > 0 then
                 ShowStatus(ST_KAMIEN)
               else
-                ShowStatus(ST_KAMIEN_FINAL);
-              just_hit_kamien := true;
               msx.stop;
+              ShowStatus(ST_KAMIEN_FINAL);
+              just_hit_kamien := true;
               Delay(300);
               msx.song(2);
               Delay(1234);
@@ -797,6 +855,7 @@ begin
             Delay(300);
             msx.song(3);
             Delay(4321);
+            stracono := false;
             Inc(plansza);
             InitGameLevel;
             g.Build;
