@@ -231,11 +231,14 @@ procedure DrawSummaryKompensacja;
 begin
   text_y := KOMPENSACJA_Y;
   text_x := 1;
-  if stracono then
-    write('Mutajca jajca: [^^^^^^^^^^^^^^^^^^^^^]')
-  else
-    write('Brak uszczerbku, brak planowej mutacji');
-  
+  write('Mutajca jajca: [^^^^^^^^^^^^^^^^^^^^^]')
+end;
+
+procedure DrawSummaryBrakKompensacji;
+begin
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  write('Brak uszczerbku, brak planowej mutacji');
 end;
 
 procedure DrawSummaryPunkty;
@@ -541,7 +544,6 @@ begin
   DrawSummaryPunkty;
   DrawSummaryRzydz;
   DrawSummaryPlansza;
-  DrawSummaryKompensacja;
 end;
 
 procedure ShowStatus(id: byte);
@@ -619,6 +621,7 @@ begin
   last_status := -1;
   ScreenOff;
   DrawSummaryHeaders;
+  DrawSummaryBrakKompensacji;
 
   dlist:=word(@dl_game);
   SetIntVec(iDLI, @dli_game);
@@ -916,7 +919,7 @@ begin
               Dec(rzydz);
               DrawSummaryRzydz;
               Delay(1234);
-              InitMutacja;
+              if not stracono then InitMutacja;
               msx.stop;
               if rzydz = -1 then break;
             end;
