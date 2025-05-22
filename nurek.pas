@@ -4,6 +4,7 @@
 uses crt, graph, math, joystick, cmc, atari;
 
 const
+  TOTAL_MAXIMUM_JAJEC: BYTE = 66;
   SUMMARY_Y: BYTE = 2;
   KOMPENSACJA_Y: BYTE = 1;
   NurekData: array[0..607] of BYTE = (
@@ -92,6 +93,7 @@ const
   ST_TRANZYCJA = 11;
 
 var
+  jajca: array[0..TOTAL_MAXIMUM_JAJEC] of cardinal;
 	msx: TCMC;  
   dlist: word absolute 560;
   text_y: byte absolute 656;
@@ -103,6 +105,7 @@ var
   mutacja_za: Word;
   obecna_mutacja: Word;
   mutacja_marker: Word;
+  current_dinojajco: Byte;
   statuses: array[0..11] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
@@ -119,7 +122,6 @@ var
       );
   last_status: byte;
   just_hit_kamien: boolean;
-  
 
 {$r 'cmc_play.rc'}  
 {$r 'charset.rc'}  
@@ -196,6 +198,19 @@ begin
   end;
   
   Result := currentValue;
+end;
+
+function PackJajcoToCardinal(x, y, sx, sy: BYTE): Cardinal;
+begin
+  PackJajcoToCardinal := (x shl 24) or (y shl 16) or (sx shl 8) or sy;
+end;
+
+procedure UnpackCardinalToJajco(value: Cardinal; var x, y, sx, sy: BYTE);
+begin
+  x  := (value shr 24) and $FF;
+  y  := (value shr 16) and $FF;
+  sx := (value shr 8) and $FF;
+  sy := value and $FF;
 end;
 
 constructor Game.Build();
@@ -372,54 +387,86 @@ begin
       end
 end;
 
-function IsVerticalCorrect(x: BYTE): BOOLEAN;
-var i, c: BYTE;
+// function IsVerticalCorrect(x: BYTE): BOOLEAN;
+// var i, c: BYTE;
+// begin
+//   for i := 0 to 79 do
+//   begin
+//     c := GetPixel(x, i);
+//     if c <> 3 then Exit(true);
+//   end;
+//   Result := false;
+// end;
+
+// procedure ClearJajca;
+// var x, y:  BYTE;
+// begin
+//   for x := 0 to 139 do
+//     for y := 0 to 79 do
+//       PutPixel(x, y, 0);
+// end;
+
+// function AreJajcaCorrect: BOOLEAN;
+// var x, y:  BYTE;
+// begin
+//   for x := 0 to 139 do
+//     begin
+//       if IsVerticalCorrect(x) = false then 
+//       begin
+//         ClearJajca;
+//         Exit(false);
+//       end;
+//     end;
+//   Result := true;
+// end;
+
+function MaxJajcaCount(plansza: BYTE): BYTE;
+var
+  max_jajca: BYTE;
 begin
-  for i := 0 to 79 do
+  max_jajca := plansza + 5;
+  if max_jajca > TOTAL_MAXIMUM_JAJEC then
+    max_jajca := TOTAL_MAXIMUM_JAJEC;
+  Result := max_jajca;
+end;
+
+procedure CalculateJajca(plansza: byte);
+var
+  i: BYTE;
+  JX, JY, JSX, JSY: BYTE;
+  max_jajca: BYTE;
+begin
+  current_dinojajco := 0;
+  for i := 0 to MaxJajcaCount(plansza) do
   begin
-    c := GetPixel(x, i);
-    if c <> 3 then Exit(true);
+    JX := Random(100);
+    JY := Random(70) + 15;
+    JSX := Random(5) + 5;
+    JSY := Random(10) + 5;
+    jajca[i] := PackJajcoToCardinal(JX, JY, JSX, JSY);
   end;
-  Result := false;
-end;
-
-procedure ClearJajca;
-var x, y:  BYTE;
-begin
-  for x := 0 to 139 do
-    for y := 0 to 79 do
-      PutPixel(x, y, 0);
-end;
-
-function AreJajcaCorrect: BOOLEAN;
-var x, y:  BYTE;
-begin
-  for x := 0 to 139 do
-    begin
-      if IsVerticalCorrect(x) = false then 
-      begin
-        ClearJajca;
-        Exit(false);
-      end;
-    end;
-  Result := true;
 end;
 
 procedure DrawJajca(plansza: byte);
 var
   i: BYTE;
   JX, JY, JSX, JSY: BYTE;
+  max_jajca: BYTE;
+  c: BYTE;
 begin
-  for i := 0 to plansza + 5 do
+  for i := 0 to MaxJajcaCount(plansza) do
   begin
-    JX := Random(100);
-    JY := Random(70) + 15;
-    JSX := Random(5) + 5;
-    JSY := Random(10) + 5;
-    SetColor(5-(i div (plansza + 5) + 2));
+    UnpackCardinalToJajco(jajca[i], JX, JY, JSX, JSY);
+    //SetColor(5-(i div (plansza + 5) + 2));
+    if i = current_dinojajco then
+      c := 2
+    else
+      c := 3;
+    SetColor(c);
     FillEllipse(JX, JY, JSX, JSY);
   end;
 end;
+ 
 
 procedure ScreenOff;assembler ;
 asm {
@@ -570,7 +617,9 @@ begin
     stx $2C5
     sty $2C6
   };
-  repeat DrawJajca(plansza) until AreJajcaCorrect;
+//  repeat DrawJajca(plansza) until AreJajcaCorrect;
+  CalculateJajca(plansza);
+  DrawJajca(plansza);
   ScreenBack;
   just_hit_kamien := false;
 end;
