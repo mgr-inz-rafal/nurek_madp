@@ -4,6 +4,7 @@
 uses crt, graph, math, joystick, cmc, atari;
 
 const
+  SUMMARY_Y: BYTE = 2;
   NurekData: array[0..607] of BYTE = (
     0,0,0,0,0,0,0,0,2,2,2,2,2,0,0,0,0,0,0,
     0,0,0,0,0,0,2,2,0,0,0,0,0,2,2,0,0,0,0,
@@ -109,6 +110,7 @@ var
       );
   last_status: byte;
   just_hit_kamien: boolean;
+  
 
 {$r 'cmc_play.rc'}  
 {$r 'charset.rc'}  
@@ -200,7 +202,7 @@ end;
 
 procedure DrawSummaryPunkty;
 begin
-  text_y := 1;
+  text_y := SUMMARY_Y;
   text_x := 33;
   write(punkty, '  ');
 end;
@@ -431,13 +433,13 @@ end;
 procedure DrawSummaryHeaders;
 begin
   text_x := 2;
-  text_y := 1;
+  text_y := SUMMARY_Y;
   write('Plansza:'*, ' 00  ', 'Rzyd'#7':'*, ' @  ', 'Punkty:'*, ' (    ');
 end;
 
 procedure DrawSummaryRzydz;
 begin
-  text_y := 1;
+  text_y := SUMMARY_Y;
   text_x := 22;
   if rzydz = -1 then
     write('-')
@@ -447,7 +449,7 @@ end;
 
 procedure DrawSummaryPlansza;
 begin
-  text_y := 1;
+  text_y := SUMMARY_Y;
   text_x := 11;
   if plansza < 10 then
     Inc(text_x);
