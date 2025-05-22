@@ -674,7 +674,7 @@ begin
   Delay(500);
   text_x := 1;
   text_y := 3;
-  write('Version 3 post-zlotowa (MadPaskaloska)');
+  write('Version 4 post-zlotowa (MadPaskaloska)');
 
   repeat until strig0 = 0;
   Delay(200);
