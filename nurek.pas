@@ -931,6 +931,7 @@ begin
             Delay(300);
             msx.song(3);
             Delay(4321);
+            if not stracono then punkty := punkty + 100 * plansza;
             stracono := false;
             Inc(plansza);
             InitGameLevel;
