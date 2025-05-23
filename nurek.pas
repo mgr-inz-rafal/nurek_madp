@@ -106,9 +106,9 @@ var
   punkty: word;
   stracono: boolean;
   mutacja_za: Word;
-  obecna_mutacja: Word;
   mutacja_marker: Word;
   current_dinojajco: Byte;
+  mutacja_vbi_counter: Byte;
   statuses: array[0..11] of ShortString = (
       'Status proncia: ' + ' EXPANSJA '*,
       'Status proncia: ' + ' KONTRAKCJA '*,
@@ -500,6 +500,7 @@ end;
 
 procedure vbi_routine_os;interrupt;
 begin
+  Inc(mutacja_vbi_counter);
   msx.play;
   asm {
     jmp XITVBV
@@ -747,8 +748,8 @@ end;
 procedure InitMutacja;
 begin
   mutacja_za := Random(7) + 8;
-  obecna_mutacja := 0;
   stracono := true;
+  mutacja_vbi_counter := 0;
   mutacja_marker := MUTACJA_MARKER_START;
   DrawSummaryKompensacja;
 end;
@@ -756,10 +757,9 @@ end;
 procedure HandleMutacja;
 begin
   if Not stracono then Exit;
-  Inc(obecna_mutacja);
-  if obecna_mutacja = mutacja_za then
+  if mutacja_vbi_counter > 69 then
   begin;
-    obecna_mutacja := 0;
+    mutacja_vbi_counter := 0;
     Poke(mutacja_marker, 124);
     Inc(mutacja_marker);
     if mutacja_marker = MUTACJA_MARKER_END then
@@ -825,7 +825,7 @@ begin
     stracono := false;
     mutacja_marker := MUTACJA_MARKER_START;
 
-//    InitMutacja;
+    //InitMutacja;
 
     InitGameLevel;
 
