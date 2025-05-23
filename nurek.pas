@@ -792,6 +792,7 @@ begin
     writeln('       tylko po wci'#23'ni'#4'ciu fajer!');
     writeln;writeln;writeln;writeln;writeln;writeln;
     writeln('   ','Tw'#16'j wspania'#123'y wynik to:'*, ' ', punkty, ' ', 'pkt!'*);
+    writeln('   ',' zgromadzonych na planszy nr '*, ' ', plansza);
 
     repeat until strig0 = 0;
 end;
