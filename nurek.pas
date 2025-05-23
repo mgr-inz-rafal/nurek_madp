@@ -103,7 +103,8 @@ var
   text_x: byte absolute 657;
   plansza: byte;
   rzydz: byte;
-  punkty: word;
+  punkty: cardinal;
+  bonus: cardinal;
   stracono: boolean;
   mutacja_za: Word;
   mutacja_marker: Word;
@@ -232,6 +233,26 @@ begin
   text_y := KOMPENSACJA_Y;
   text_x := 1;
   write('Mutajca jajca: [^^^^^^^^^^^^^^^^^^^^^]')
+end;
+
+procedure DrawSummaryMaszBonus;
+begin
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  write('                                      ');
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  write('    Bonus ', bonus, ' za brak uszczerbku');
+end;
+
+procedure DrawSummaryNieMaszBonusu;
+begin
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  write('                                      ');
+  text_y := KOMPENSACJA_Y;
+  text_x := 1;
+  write('   Nie ma bonusu, bo by'#123' uszczerbek   ');
 end;
 
 procedure DrawSummaryBrakKompensacji;
@@ -931,8 +952,15 @@ begin
             msx.stop;
             Delay(300);
             msx.song(3);
+            if not stracono then
+            begin
+              bonus := 100 * plansza;
+              punkty := punkty + bonus;
+              DrawSummaryMaszBonus;
+              DrawSummaryPunkty;
+            end
+            else DrawSummaryNieMaszBonusu;
             Delay(4321);
-            if not stracono then punkty := punkty + 100 * plansza;
             stracono := false;
             Inc(plansza);
             InitGameLevel;
