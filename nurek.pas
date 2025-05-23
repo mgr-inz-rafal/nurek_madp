@@ -4,6 +4,7 @@
 uses crt, graph, math, joystick, cmc, atari;
 
 const
+  BONUS_MULTIPLIER: BYTE = 97;
   COLOR_KAMIEN: BYTE = 3;
   COLOR_JAJCO: BYTE = 2;
   TOTAL_MAXIMUM_JAJEC: BYTE = 66;
@@ -821,6 +822,7 @@ end;
 var
   g: Game;
   speed: Word;
+  ilicz_wlodzimierz: Word;
 
 begin
   Randomize;
@@ -954,13 +956,24 @@ begin
             msx.song(3);
             if not stracono then
             begin
-              bonus := 100 * plansza;
+              bonus := BONUS_MULTIPLIER * plansza;
               punkty := punkty + bonus;
               DrawSummaryMaszBonus;
               DrawSummaryPunkty;
             end
             else DrawSummaryNieMaszBonusu;
-            Delay(4321);
+            for ilicz_wlodzimierz := g.chuj_p downto 0 do begin
+              SetColor(COLOR_JAJCO);
+              PutPixel(Round(g.chuj_history_x[ilicz_wlodzimierz]), Round(g.chuj_history_y[ilicz_wlodzimierz]));
+              Delay(9);
+            end;
+            asm {
+              pha
+              lda #$BA
+              sta $2C4
+              pla
+            };
+            Delay(1234);
             stracono := false;
             Inc(plansza);
             InitGameLevel;
